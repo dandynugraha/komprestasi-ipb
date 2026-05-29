@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+@theme {
+  --color-royal-50: #F0EBFF;
+  --color-royal-100: #DDD4FF;
+  --color-royal-200: #C0AAFF;
+  --color-royal-300: #9B7AFF;
+  --color-royal-400: #7B4DFF;
+  --color-royal-500: #6231D4;
+  --color-royal-600: #4A1FB5;
+  --color-royal-700: #371595;
+  --color-royal-800: #2E1065;
+  --color-royal-900: #1A0A3E;
+
+  --color-accent: #C6FF00;
+  --color-accent-dark: #9ADB15;
+
+  --font-sans: "General Sans", "Inter", system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #FAFAFA;
+  color: #111;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 3px; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Hero gradient — vibrant purple to blue */
+.hero-gradient {
+  background: linear-gradient(135deg, #4A1FB5 0%, #6231D4 35%, #7B4DFF 65%, #5B34E8 100%);
+}
+
+/* Card */
+.card-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(74, 31, 181, 0.10);
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #C6FF00, #9ADB15);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Section divider wave */
+.wave-bottom {
+  position: relative;
+}
+.wave-bottom::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: #FAFAFA;
+  clip-path: ellipse(55% 100% at 50% 100%);
+}
+
+/* ─── card-hover (used in MBD/BPH) ─── */
+.card-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(74, 31, 181, 0.09);
+}
+
+/* ─── Stronger card-lift ─── */
+.card-lift {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 64px rgba(74, 31, 181, 0.16);
+}
+
+/* ─── Glow effects ─── */
+.glow-lime  { box-shadow: 0 0 22px rgba(198, 255, 0, 0.5),  0 0 44px rgba(198, 255, 0, 0.18); }
+.glow-purple { box-shadow: 0 0 22px rgba(74, 31, 181, 0.35), 0 0 48px rgba(74, 31, 181, 0.12); }
+
+/* ─── Slow spin decorative rings ─── */
+@keyframes spin-slow   { to { transform: rotate(360deg);  } }
+@keyframes spin-slow-r { to { transform: rotate(-360deg); } }
+.spin-slow   { animation: spin-slow   28s linear infinite; transform-origin: center; }
+.spin-slow-r { animation: spin-slow-r 20s linear infinite; transform-origin: center; }
+
+/* ─── Text flicker (splash) ─── */
+@keyframes text-flicker {
+  0%, 85%, 100% { opacity: 1; }
+  87% { opacity: 0.25; filter: brightness(2.2); }
+  89% { opacity: 1; }
+  92% { opacity: 0.6; }
+  94% { opacity: 1; }
+}
+.text-flicker { animation: text-flicker 6s ease-in-out infinite; animation-delay: 2.6s; }
