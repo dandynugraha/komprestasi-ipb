@@ -8,6 +8,8 @@ import { useAuth } from "@/context/AuthContext";
 import siteConfig from "@/config/site.config";
 import { supabase } from "@/lib/supabase";
 
+const prestasiStatuses = ["Honorable Mention", "Harapan 3", "Harapan 2", "Harapan 1", "Juara 3", "Juara 2", "Juara 1"];
+
 const typeConfig = {
   prestasi: {
     title: "Upload Prestasi",
@@ -253,7 +255,7 @@ export default function UploadPage() {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-900 focus:outline-none focus:border-royal-300 focus:ring-2 focus:ring-royal-100 transition-all appearance-none bg-white"
               >
                 <option value="">Pilih...</option>
-                {siteConfig.lombaStatuses.map((s) => (
+                {prestasiStatuses.map((s) => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>

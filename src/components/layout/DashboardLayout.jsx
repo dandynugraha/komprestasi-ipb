@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Trophy, Calendar, Wallet, CalendarDays, Upload,
   Award, Activity, Folder, HelpCircle, Settings, LogOut,
-  Database, Users, Palette, MapPin, Eye, Brush, Menu, X,
+  Database, Users, Palette, MapPin, Eye, Brush, Menu, X, AlertTriangle,
 } from "lucide-react";
 import siteConfig from "@/config/site.config";
 import { useAuth } from "@/context/AuthContext";
@@ -15,6 +15,7 @@ const iconMap = {
   activity: Activity, folder: Folder, help: HelpCircle,
   settings: Settings, database: Database, users: Users,
   palette: Palette, mapPin: MapPin, eye: Eye, brush: Brush,
+  alertTriangle: AlertTriangle,
 };
 
 function getNavItems(profile) {
@@ -78,6 +79,7 @@ function getNavItems(profile) {
 
   // Lainnya
   items.push({ section: "Lainnya" });
+  items.push({ icon: "alertTriangle", label: "Report Bug", path: "/dashboard/report-bug" });
   items.push({ icon: "help", label: "FAQ", path: "/faq" });
   items.push({ icon: "settings", label: "Settings", path: "/dashboard/settings" });
 

@@ -72,7 +72,10 @@ export default function HEGDashboard() {
             <p className="text-[11px] text-zinc-400">HR — registrasi, skor keaktifan, event</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Link to="/dashboard/create-lomba-info" className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-50 text-amber-700 text-[11px] font-bold hover:bg-amber-100 transition-colors card-lift border border-amber-100/60">
+            <Star size={13} /> Upload Info Lomba
+          </Link>
           <Link to="/dashboard/create-event" className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-50 text-emerald-700 text-[11px] font-bold hover:bg-emerald-100 transition-colors card-lift border border-emerald-100/60">
             <CalendarDays size={13} /> Buat Event
           </Link>

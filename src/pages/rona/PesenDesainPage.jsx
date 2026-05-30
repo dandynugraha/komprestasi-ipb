@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Palette, Plus, X, Clock, Play, RotateCcw, CheckCircle } from "lucide-react";
+import { Palette, Plus, X, Clock, Play, RotateCcw, CheckCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 
@@ -16,6 +16,16 @@ const labelClass = "block text-[11px] font-bold text-zinc-500 mb-1.5 uppercase t
 
 function formatDate(d) {
   return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function parseDriveLink(notes) {
+  if (!notes) return null;
+  const match = notes.match(/\[DRIVE_LINK:(https?:\/\/[^\]]+)\]/);
+  return match ? match[1] : null;
+}
+
+function cleanNotesDisplay(notes) {
+  return (notes || "").replace(/\n?\[DRIVE_LINK:[^\]]*\]/g, "").trim();
 }
 
 export default function PesenDesainPage() {
@@ -40,6 +50,7 @@ export default function PesenDesainPage() {
       .from("pesen_desain")
       .select("*")
       .eq("requested_by", user.id)
+      .neq("from_divisi", "bug_report")
       .order("created_at", { ascending: false });
     setItems(data || []);
   }
@@ -152,20 +163,32 @@ export default function PesenDesainPage() {
           {items.map(item => {
             const cfg = statusConfig[item.status] || statusConfig.Pending;
             const Icon = cfg.icon;
+            const driveLink = parseDriveLink(item.notes);
+            const displayNotes = cleanNotesDisplay(item.notes);
             return (
               <div key={item.id} className="bg-white rounded-xl border border-zinc-200 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-zinc-900 text-sm truncate">{item.title}</p>
                     <p className="text-[11px] text-zinc-400 mt-0.5">{formatDate(item.created_at)}</p>
-                    {item.notes && (
-                      <p className="text-[11px] text-zinc-300 mt-1.5 line-clamp-2 whitespace-pre-line">{item.notes}</p>
+                    {displayNotes && (
+                      <p className="text-[11px] text-zinc-300 mt-1.5 line-clamp-2 whitespace-pre-line">{displayNotes}</p>
                     )}
                   </div>
                   <span className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
                     <Icon size={10} /> {item.status}
                   </span>
                 </div>
+                {item.status === "Done" && driveLink && (
+                  <a
+                    href={driveLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 flex items-center justify-center gap-1.5 w-full py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors"
+                  >
+                    <ExternalLink size={12} /> Download Hasil Desain
+                  </a>
+                )}
               </div>
             );
           })}

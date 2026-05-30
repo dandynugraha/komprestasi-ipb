@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import { Trophy, Plus, Search, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
-import siteConfig from "@/config/site.config";
+
+const lombaStatuses = ["Peserta", "Semifinalis", "Finalis"];
 
 const CLUSTER_OPTIONS = [
   "Penulisan Ilmiah dan Olimpiade Sains",
@@ -18,8 +19,9 @@ function formatDate(d) {
 
 function statusBadgeClass(s) {
   if (s === "Peserta") return "bg-zinc-100 text-zinc-600";
-  if (s === "Finalis") return "bg-amber-100 text-amber-700";
-  return "bg-emerald-100 text-emerald-700";
+  if (s === "Semifinalis") return "bg-amber-100 text-amber-700";
+  if (s === "Finalis") return "bg-emerald-100 text-emerald-700";
+  return "bg-zinc-100 text-zinc-600";
 }
 
 export default function MyLombaPage() {
@@ -31,7 +33,7 @@ export default function MyLombaPage() {
 
   const [title, setTitle] = useState("");
   const [cabang, setCabang] = useState("");
-  const [status, setStatus] = useState(siteConfig.lombaStatuses[0]);
+  const [status, setStatus] = useState(lombaStatuses[0]);
   const [deadline, setDeadline] = useState("");
   const [cluster, setCluster] = useState("");
 
@@ -68,7 +70,7 @@ export default function MyLombaPage() {
       if (error) throw error;
       setTitle("");
       setCabang("");
-      setStatus(siteConfig.lombaStatuses[0]);
+      setStatus(lombaStatuses[0]);
       setDeadline("");
       setShowAdd(false);
       fetchLomba();
@@ -151,7 +153,7 @@ export default function MyLombaPage() {
                 onChange={(e) => setStatus(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-700 focus:outline-none focus:border-royal-300 focus:ring-4 focus:ring-royal-100/50 transition-all appearance-none"
               >
-                {siteConfig.lombaStatuses.map((s) => (
+                {lombaStatuses.map((s) => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
@@ -225,7 +227,7 @@ export default function MyLombaPage() {
                     onChange={(e) => handleStatusUpdate(item.id, e.target.value)}
                     className="text-[10px] pl-2 pr-5 py-1 rounded-lg bg-zinc-50 border border-zinc-200 focus:outline-none appearance-none"
                   >
-                    {siteConfig.lombaStatuses.map(s => (
+                    {lombaStatuses.map(s => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
@@ -239,7 +241,7 @@ export default function MyLombaPage() {
 
       <div className="mt-4 p-4 rounded-2xl bg-royal-50 border border-royal-100">
         <p className="text-[11px] text-royal-700">
-          Status lomba kamu (Peserta → Finalis → Juara) akan terlihat di <strong>CDA cluster kamu</strong>, bukan di halaman Home publik. Hanya yang berstatus <strong>Juara</strong> yang muncul di Home.
+          Status lomba kamu (Peserta → Semifinalis → Finalis) dicatat di My Lomba. Kalau sudah dapat hasil, upload sebagai <strong>Prestasi</strong> di halaman Upload dengan status yang sesuai.
         </p>
       </div>
     </div>

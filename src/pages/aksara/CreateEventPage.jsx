@@ -25,6 +25,7 @@ export default function CreateEventPage() {
     time_start: "",
     time_end: "",
     location: "",
+    pengisiMateri: "",
     visibility: "internal",
     spots: "",
     gformUrl: "",
@@ -81,7 +82,8 @@ export default function CreateEventPage() {
       }
 
       const gformUrl = form.visibility === "eksternal" ? (form.gformUrl.trim() || null) : null;
-      const encodedDesc = encodeDescription(form.description.trim() || null, imageUrl, gformUrl);
+      const speakerName = form.pengisiMateri.trim() || null;
+      const encodedDesc = encodeDescription(form.description.trim() || null, imageUrl, gformUrl, speakerName);
 
       const { error: insertError } = await supabase.from("events").insert({
         title: form.title.trim(),
@@ -254,6 +256,21 @@ export default function CreateEventPage() {
             value={form.location}
             onChange={handleChange}
             placeholder="Nama tempat / link online..."
+            className="w-full text-sm text-zinc-900 placeholder:text-zinc-300 bg-zinc-50 rounded-lg px-3 py-2.5 border border-zinc-100 focus:outline-none focus:border-royal-400 focus:ring-1 focus:ring-royal-400 transition"
+          />
+        </div>
+
+        {/* Pengisi Materi */}
+        <div className="bg-white rounded-xl border border-zinc-100 p-4">
+          <label className="block text-xs font-bold text-zinc-700 mb-2">
+            Pengisi Materi (opsional)
+          </label>
+          <input
+            type="text"
+            name="pengisiMateri"
+            value={form.pengisiMateri}
+            onChange={handleChange}
+            placeholder="Nama pengisi materi / pembicara"
             className="w-full text-sm text-zinc-900 placeholder:text-zinc-300 bg-zinc-50 rounded-lg px-3 py-2.5 border border-zinc-100 focus:outline-none focus:border-royal-400 focus:ring-1 focus:ring-royal-400 transition"
           />
         </div>

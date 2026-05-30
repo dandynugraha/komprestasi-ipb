@@ -23,6 +23,7 @@ import MyPengeluaranPage from "@/pages/rona/MyPengeluaranPage";
 import MyEventPage from "@/pages/rona/MyEventPage";
 import MyUploadsPage from "@/pages/rona/MyUploadsPage";
 import PesenDesainPage from "@/pages/rona/PesenDesainPage";
+import ReportBugPage from "@/pages/rona/ReportBugPage";
 
 // Dashboard — Aksara pages
 import CDADashboard from "@/pages/aksara/CDADashboard";
@@ -31,6 +32,7 @@ import MBDDashboard from "@/pages/aksara/MBDDashboard";
 import KorvoksDashboard from "@/pages/aksara/KorvoksDashboard";
 import BPHDashboard from "@/pages/aksara/BPHDashboard";
 import CreateEventPage from "@/pages/aksara/CreateEventPage";
+import CreateLombaInfoPage from "@/pages/aksara/CreateLombaInfoPage";
 
 // Placeholder for pages still in development
 function PlaceholderPage({ title }) {
@@ -81,7 +83,9 @@ export default function App() {
             <Route path="event" element={<MyEventPage />} />
             <Route path="my-uploads" element={<MyUploadsPage />} />
             <Route path="pesen-desain" element={<PesenDesainPage />} />
+            <Route path="report-bug" element={<ReportBugPage />} />
             <Route path="create-event" element={<CreateEventPage />} />
+            <Route path="create-lomba-info" element={<CreateLombaInfoPage />} />
             <Route path="settings" element={<PlaceholderPage title="Settings" />} />
 
             {/* Upload routes */}

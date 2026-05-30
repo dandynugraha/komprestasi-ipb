@@ -11,6 +11,8 @@ import { parseDescription } from "@/lib/eventUtils";
 
 const base = import.meta.env.BASE_URL || "/";
 
+const PRESTASI_STATUSES = ["Honorable Mention", "Harapan 3", "Harapan 2", "Harapan 1", "Juara 3", "Juara 2", "Juara 1"];
+
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
   visible: (i = 0) => ({
@@ -142,7 +144,7 @@ function ItemDetailModal({ item, onClose }) {
 
 /* Event detail modal */
 function EventDetailModal({ event, onClose }) {
-  const { imageUrl, gformUrl, text } = parseDescription(event.description);
+  const { imageUrl, gformUrl, speakerName, text } = parseDescription(event.description);
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -186,6 +188,11 @@ function EventDetailModal({ event, onClose }) {
                 {event.location}
               </div>
             )}
+            {speakerName && (
+              <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <span className="font-medium text-zinc-600">Pengisi:</span> {speakerName}
+              </div>
+            )}
           </div>
           {text && <p className="text-sm text-zinc-600 leading-relaxed mb-5 whitespace-pre-line">{text}</p>}
           {gformUrl && (
@@ -219,11 +226,15 @@ export default function HomePage() {
   const [events, setEvents] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [eventsThisMonth, setEventsThisMonth] = useState(0);
 
   useEffect(() => {
     async function fetchAll() {
       try {
         const today = new Date().toISOString().split("T")[0];
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
 
         const [
           { count: userCount },
@@ -235,16 +246,17 @@ export default function HomePage() {
           { data: prestasiCards },
           { data: projectCards },
           { data: eventCards },
+          { count: eventsThisMonthCount },
         ] = await Promise.all([
           supabase.from("users").select("*", { count: "exact", head: true }),
-          supabase.from("prestasi").select("*", { count: "exact", head: true }).in("status", ["Juara 1", "Juara 2", "Juara 3"]),
+          supabase.from("prestasi").select("*", { count: "exact", head: true }).in("status", PRESTASI_STATUSES),
           supabase.from("events").select("*", { count: "exact", head: true }),
           supabase.from("projects").select("*", { count: "exact", head: true }),
           supabase.from("lomba").select("user_id"),
           supabase.from("lomba").select("cabang"),
           supabase.from("prestasi")
             .select("id, title, cabang, photo_url, status, storytelling, users(name)")
-            .in("status", ["Juara 1", "Juara 2", "Juara 3"])
+            .in("status", PRESTASI_STATUSES)
             .eq("is_published", true)
             .limit(6),
           supabase.from("projects")
@@ -257,6 +269,7 @@ export default function HomePage() {
             .gte("date", today)
             .order("date", { ascending: true })
             .limit(3),
+          supabase.from("events").select("*", { count: "exact", head: true }).gte("date", startOfMonth).lte("date", endOfMonth),
         ]);
 
         const uniqueParticipants = new Set((lombaUsers || []).map(l => l.user_id)).size;
@@ -280,6 +293,7 @@ export default function HomePage() {
           lombaTotal: total,
           cabangData,
         });
+        setEventsThisMonth(eventsThisMonthCount || 0);
         setPrestasi((prestasiCards || []).map(i => ({ ...i, _type: "prestasi" })));
         setProjects((projectCards || []).map(i => ({ ...i, _type: "project" })));
         setEvents(eventCards || []);
@@ -289,6 +303,17 @@ export default function HomePage() {
     }
     fetchAll();
   }, []);
+
+  useEffect(() => {
+    if (!selectedItem && !selectedEvent) return;
+    window.history.pushState({ modal: true }, '');
+    const onPopState = () => {
+      setSelectedItem(null);
+      setSelectedEvent(null);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [selectedItem, selectedEvent]);
 
   return (
     <div>
@@ -360,7 +385,7 @@ export default function HomePage() {
                       <CalendarDays size={18} className="text-white" />
                     </div>
                     <div>
-                      <p className="text-2xl font-black text-white leading-none">&mdash;</p>
+                      <p className="text-2xl font-black text-white leading-none">{eventsThisMonth}</p>
                       <p className="text-[10px] text-white/40 font-medium mt-0.5">Event bulan ini</p>
                     </div>
                   </motion.div>
@@ -528,7 +553,7 @@ export default function HomePage() {
               <EmptyState icon={CalendarDays} title="Belum ada event" sub="Event mendatang akan muncul di sini" color="bg-emerald-50" iconColor="text-emerald-300" />
             ) : (
               events.map(item => {
-                const { gformUrl, text } = parseDescription(item.description);
+                const { gformUrl, speakerName: cardSpeaker, text } = parseDescription(item.description);
                 return (
                   <div
                     key={item.id}
@@ -547,6 +572,9 @@ export default function HomePage() {
                         <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1">
                           <MapPin size={10} /> {item.location}
                         </p>
+                      )}
+                      {cardSpeaker && (
+                        <p className="text-xs text-zinc-400 mt-1">Pengisi: {cardSpeaker}</p>
                       )}
                       {text && <p className="text-xs text-zinc-400 mt-1.5 line-clamp-2">{text}</p>}
                     </div>
