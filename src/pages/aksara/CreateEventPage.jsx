@@ -99,7 +99,11 @@ export default function CreateEventPage() {
       });
 
       if (insertError) throw insertError;
-      navigate("/dashboard/cda");
+      const role = profile?.role ?? "";
+      if (role.startsWith("cda")) navigate("/dashboard/cda");
+      else if (role === "heg") navigate("/dashboard/heg");
+      else if (role === "korvoks") navigate("/dashboard/korvoks");
+      else navigate("/dashboard");
     } catch (err) {
       setError(err.message);
     } finally {

@@ -5,10 +5,10 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 
 const statusConfig = {
-  Pending:     { icon: Clock,        color: "text-zinc-500",   bg: "bg-zinc-100"   },
-  "In Progress":{ icon: Play,        color: "text-blue-600",   bg: "bg-blue-100"   },
-  Revision:    { icon: RotateCcw,    color: "text-amber-600",  bg: "bg-amber-100"  },
-  Done:        { icon: CheckCircle,  color: "text-emerald-600",bg: "bg-emerald-100"},
+  Pending:      { icon: Clock,        color: "text-zinc-600",   bg: "bg-zinc-100"    },
+  "In Progress":{ icon: Play,         color: "text-blue-700",   bg: "bg-blue-100"    },
+  Revision:     { icon: RotateCcw,    color: "text-amber-700",  bg: "bg-amber-100"   },
+  Done:         { icon: CheckCircle,  color: "text-emerald-700",bg: "bg-emerald-100" },
 };
 
 const inputClass = "w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs placeholder:text-zinc-300 focus:outline-none focus:border-violet-300 focus:ring-4 focus:ring-violet-100/50 transition-all";
@@ -20,8 +20,13 @@ function formatDate(d) {
 
 function parseDriveLink(notes) {
   if (!notes) return null;
-  const match = notes.match(/\[DRIVE_LINK:(https?:\/\/[^\]]+)\]/);
-  return match ? match[1] : null;
+  const tagged = notes.match(/\[DRIVE_LINK:(https?:\/\/[^\]]+)\]/);
+  if (tagged) return tagged[1];
+  const labeled = notes.match(/(?:DRIVE_LINK:|Link Drive:\s*)(https?:\/\/[^\s\]]+)/i);
+  if (labeled) return labeled[1];
+  const direct = notes.match(/https?:\/\/drive\.google\.com\/[^\s\]]+/i);
+  if (direct) return direct[0];
+  return null;
 }
 
 function cleanNotesDisplay(notes) {
@@ -32,6 +37,7 @@ export default function PesenDesainPage() {
   const { user, profile } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [items, setItems] = useState([]);
+  const [selectedPesanan, setSelectedPesanan] = useState(null);
 
   const [judul, setJudul] = useState("");
   const [ilustrasi, setIlustrasi] = useState("");
@@ -44,6 +50,15 @@ export default function PesenDesainPage() {
   useEffect(() => {
     if (user) fetchRequests();
   }, [user?.id]);
+
+  useEffect(() => {
+    if (selectedPesanan) {
+      window.history.pushState({ modal: true }, "");
+      const onPopState = () => setSelectedPesanan(null);
+      window.addEventListener("popstate", onPopState);
+      return () => window.removeEventListener("popstate", onPopState);
+    }
+  }, [selectedPesanan]);
 
   async function fetchRequests() {
     const { data } = await supabase
@@ -74,11 +89,7 @@ export default function PesenDesainPage() {
     setLoading(false);
     if (insertError) { setError(insertError.message); return; }
 
-    setJudul("");
-    setIlustrasi("");
-    setDesainGrafis("");
-    setLinkKonten("");
-    setKeterangan("");
+    setJudul(""); setIlustrasi(""); setDesainGrafis(""); setLinkKonten(""); setKeterangan("");
     setShowAdd(false);
     fetchRequests();
   }
@@ -166,7 +177,11 @@ export default function PesenDesainPage() {
             const driveLink = parseDriveLink(item.notes);
             const displayNotes = cleanNotesDisplay(item.notes);
             return (
-              <div key={item.id} className="bg-white rounded-xl border border-zinc-200 p-5">
+              <div
+                key={item.id}
+                className="bg-white rounded-xl border border-zinc-200 p-5 cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setSelectedPesanan(item)}
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-zinc-900 text-sm truncate">{item.title}</p>
@@ -175,25 +190,87 @@ export default function PesenDesainPage() {
                       <p className="text-[11px] text-zinc-300 mt-1.5 line-clamp-2 whitespace-pre-line">{displayNotes}</p>
                     )}
                   </div>
-                  <span className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
-                    <Icon size={10} /> {item.status}
-                  </span>
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    <span className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${cfg.bg} ${cfg.color}`}>
+                      <Icon size={10} /> {item.status}
+                    </span>
+                    {item.status === "Done" && driveLink && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); window.open(driveLink, "_blank"); }}
+                        className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                      >
+                        <ExternalLink size={10} /> Lihat Desain
+                      </button>
+                    )}
+                  </div>
                 </div>
-                {item.status === "Done" && driveLink && (
-                  <a
-                    href={driveLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 flex items-center justify-center gap-1.5 w-full py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors"
-                  >
-                    <ExternalLink size={12} /> Download Hasil Desain
-                  </a>
-                )}
               </div>
             );
           })}
         </div>
       )}
+
+      {/* Modal detail */}
+      <AnimatePresence>
+        {selectedPesanan && (() => {
+          const item = selectedPesanan;
+          const cfg = statusConfig[item.status] || statusConfig.Pending;
+          const Icon = cfg.icon;
+          const driveLink = parseDriveLink(item.notes);
+          const displayNotes = cleanNotesDisplay(item.notes);
+          return (
+            <motion.div
+              key="modal-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center overflow-y-auto p-4"
+              onClick={() => setSelectedPesanan(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="relative bg-white rounded-xl max-w-lg w-full mx-auto my-8 p-6 max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => setSelectedPesanan(null)}
+                  className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+
+                <div className="pr-8 mb-1">
+                  <h2 className="text-xl font-black text-zinc-900">{item.title}</h2>
+                </div>
+
+                <div className="flex items-center gap-2 mb-4">
+                  <span className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${cfg.bg} ${cfg.color}`}>
+                    <Icon size={10} /> {item.status}
+                  </span>
+                  <span className="text-xs text-zinc-400">{formatDate(item.created_at)}</span>
+                </div>
+
+                {displayNotes && (
+                  <div className="bg-zinc-50 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-zinc-600 whitespace-pre-wrap">{displayNotes}</p>
+                  </div>
+                )}
+
+                {item.status === "Done" && driveLink && (
+                  <button
+                    onClick={() => window.open(driveLink, "_blank")}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 transition-colors mt-2"
+                  >
+                    <ExternalLink size={14} /> Lihat Desain
+                  </button>
+                )}
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 }
