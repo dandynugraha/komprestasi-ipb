@@ -81,8 +81,8 @@ export default function KorvoksDashboard() {
 
       <div className="grid grid-cols-4 gap-2 mb-5">
         {stats.map((s, i) => (
-          <div key={i} className="bg-gradient-to-br from-white to-zinc-50 rounded-xl border border-zinc-100 p-4 shadow-sm card-hover">
-            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-2.5`} style={{ boxShadow: `0 4px 12px ${s.shadow}` }}>
+          <div key={i} className="bg-gradient-to-br from-white to-zinc-50 rounded-xl border border-zinc-100 p-4 shadow-sm card-hover text-center">
+            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-2.5 mx-auto`} style={{ boxShadow: `0 4px 12px ${s.shadow}` }}>
               <span className="text-white text-[10px] font-black">{s.value}</span>
             </div>
             <p className="text-xl font-black text-zinc-900">{s.value}</p>

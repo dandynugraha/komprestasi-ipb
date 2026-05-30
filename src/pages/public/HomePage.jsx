@@ -11,6 +11,9 @@ import { parseDescription } from "@/lib/eventUtils";
 
 const base = import.meta.env.BASE_URL || "/";
 
+const campusImg = new Image();
+campusImg.src = `${base}assets/ipb-campus.jpg`;
+
 const PRESTASI_STATUSES = ["Honorable Mention", "Harapan 3", "Harapan 2", "Harapan 1", "Juara 3", "Juara 2", "Juara 1"];
 
 const fadeUp = {

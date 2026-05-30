@@ -17,6 +17,7 @@ export default function HEGDashboard() {
   const [events, setEvents] = useState([]);
   const [expandedEventId, setExpandedEventId] = useState(null);
   const [eventRegs, setEventRegs] = useState({}); // { [eventId]: [{...reg, user_name}] }
+  const [scoreRegs, setScoreRegs] = useState({});
   const [loadingRegs, setLoadingRegs] = useState(false);
 
   // tab: skor keaktifan
@@ -108,12 +109,43 @@ export default function HEGDashboard() {
     setLoadingRegs(false);
   }
 
-  function handleExpandEvent(eventId) {
+  async function fetchScoreRegs(eventId) {
+    if (scoreRegs[eventId]) return;
+    setLoadingRegs(true);
+    const { data: regs } = await supabase
+      .from("event_registrations")
+      .select("*")
+      .eq("event_id", eventId)
+      .eq("attended", true);
+
+    if (!regs || regs.length === 0) {
+      setScoreRegs(prev => ({ ...prev, [eventId]: [] }));
+      setLoadingRegs(false);
+      return;
+    }
+
+    const userIds = [...new Set(regs.map(r => r.user_id).filter(Boolean))];
+    const { data: users } = userIds.length > 0
+      ? await supabase.from("users").select("id, name").in("id", userIds)
+      : { data: [] };
+
+    const userMap = {};
+    (users || []).forEach(u => { userMap[u.id] = u.name; });
+
+    setScoreRegs(prev => ({
+      ...prev,
+      [eventId]: regs.map(r => ({ ...r, user_name: userMap[r.user_id] || "Unknown" })),
+    }));
+    setLoadingRegs(false);
+  }
+
+  function handleExpandEvent(eventId, mode) {
     if (expandedEventId === eventId) {
       setExpandedEventId(null);
     } else {
       setExpandedEventId(eventId);
-      fetchEventRegs(eventId);
+      if (mode === "scores") fetchScoreRegs(eventId);
+      else fetchEventRegs(eventId);
     }
   }
 
@@ -134,7 +166,7 @@ export default function HEGDashboard() {
   }
 
   async function saveScores(eventId) {
-    const regs = eventRegs[eventId] || [];
+    const regs = scoreRegs[eventId] || [];
     const toUpdate = regs.filter(r => scoreEdits[r.id] !== undefined);
     if (toUpdate.length === 0) return;
     setScoreSaving(true);
@@ -143,7 +175,7 @@ export default function HEGDashboard() {
         supabase.from("event_registrations").update({ score: scoreEdits[r.id] }).eq("id", r.id)
       )
     );
-    setEventRegs(prev => ({
+    setScoreRegs(prev => ({
       ...prev,
       [eventId]: (prev[eventId] || []).map(r =>
         scoreEdits[r.id] !== undefined ? { ...r, score: scoreEdits[r.id] } : r
@@ -177,14 +209,16 @@ export default function HEGDashboard() {
   ];
 
   function EventCard({ event, mode }) {
-    const regs = eventRegs[event.id] || [];
+    const regs = mode === "scores"
+      ? (scoreRegs[event.id] || [])
+      : (eventRegs[event.id] || []);
     const isExpanded = expandedEventId === event.id;
 
     return (
       <div className="bg-white rounded-xl border border-zinc-200 p-4">
         <div
           className="cursor-pointer flex items-start justify-between gap-3"
-          onClick={() => handleExpandEvent(event.id)}
+          onClick={() => handleExpandEvent(event.id, mode)}
         >
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -212,10 +246,12 @@ export default function HEGDashboard() {
 
         {isExpanded && (
           <div className="bg-zinc-50 rounded-lg p-4 mt-3">
-            {loadingRegs && !eventRegs[event.id] ? (
+            {loadingRegs && !(mode === "scores" ? scoreRegs[event.id] : eventRegs[event.id]) ? (
               <p className="text-xs text-zinc-400 text-center py-4">Memuat...</p>
             ) : regs.length === 0 ? (
-              <p className="text-xs text-zinc-400 text-center py-4">Belum ada peserta</p>
+              <p className="text-xs text-zinc-400 text-center py-4">
+                {mode === "scores" ? "Belum ada peserta yang hadir" : "Belum ada peserta"}
+              </p>
             ) : (
               <>
                 {regs.map((reg) => (
@@ -295,8 +331,8 @@ export default function HEGDashboard() {
 
       <div className="grid grid-cols-4 gap-2 mb-6">
         {statItems.map((s, i) => (
-          <div key={i} className="bg-gradient-to-br from-white to-zinc-50 rounded-xl border border-zinc-100 p-4 shadow-sm card-hover">
-            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-2.5`} style={{ boxShadow: `0 4px 12px ${s.shadow}` }}>
+          <div key={i} className="bg-gradient-to-br from-white to-zinc-50 rounded-xl border border-zinc-100 p-4 shadow-sm card-hover text-center">
+            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-2.5 mx-auto`} style={{ boxShadow: `0 4px 12px ${s.shadow}` }}>
               <span className="text-white text-[9px] font-black">{typeof s.value === "number" ? s.value : "?"}</span>
             </div>
             <p className="text-xl font-black text-zinc-900">{s.value}</p>
