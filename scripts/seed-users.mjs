@@ -15,7 +15,7 @@
  */
 
 const SUPABASE_URL = "https://pgbuhqqrpqzydhsrxxbe.supabase.co";      // ← GANTI
-const SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnYnVocXFycHF6eWRoc3J4eGJlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk3MzM2MCwiZXhwIjoyMDk1NTQ5MzYwfQ.q0eegfZ7vfhUlnO3rQIdeE2C85dZL_zlva4hbV0fgLM";  // ← GANTI
+const SERVICE_ROLE_KEY = "HAPUS_SETELAH_SEED";  // ← GANTI
 
 const users = [
   // ── RONA — Bisnis dan Analisis Strategi (25) ──
