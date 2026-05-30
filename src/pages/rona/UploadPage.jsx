@@ -69,6 +69,10 @@ export default function UploadPage() {
 
   async function handleSubmit() {
     if (!form.title || !form.storytelling || !photo) return;
+    if (siteConfig.supabase.url.includes("YOUR_PROJECT")) {
+      alert("Supabase belum dikonfigurasi");
+      return;
+    }
     setLoading(true);
 
     try {

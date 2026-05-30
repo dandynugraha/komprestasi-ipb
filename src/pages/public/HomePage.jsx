@@ -5,6 +5,8 @@ import { Trophy, ArrowRight, Users, CalendarDays, Folder, Sparkles, Zap, BookOpe
 import siteConfig from "@/config/site.config";
 import { supabase } from "@/lib/supabase";
 
+const base = import.meta.env.BASE_URL || "/";
+
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
   visible: (i = 0) => ({
@@ -79,6 +81,10 @@ function BarChart({ data }) {
   );
 }
 
+function formatDate(d) {
+  return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
 export default function HomePage() {
   const [stats, setStats] = useState({
     totalUsers: 105,
@@ -89,17 +95,38 @@ export default function HomePage() {
     lombaTotal: 105,
     cabangData: [],
   });
+  const [prestasi, setPrestasi] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    async function fetchStats() {
+    async function fetchAll() {
       try {
-        const { count: userCount } = await supabase.from("users").select("*", { count: "exact", head: true });
-        const { count: prestasiCount } = await supabase.from("prestasi").select("*", { count: "exact", head: true }).in("status", ["Juara 1", "Juara 2", "Juara 3"]);
-        const { count: eventCount } = await supabase.from("events").select("*", { count: "exact", head: true });
-        const { count: projectCount } = await supabase.from("projects").select("*", { count: "exact", head: true });
-        const { data: lombaUsers } = await supabase.from("lomba").select("user_id");
+        const today = new Date().toISOString().split("T")[0];
+
+        const [
+          { count: userCount },
+          { count: prestasiCount },
+          { count: eventCount },
+          { count: projectCount },
+          { data: lombaUsers },
+          { data: lombaAll },
+          { data: prestasiCards },
+          { data: projectCards },
+          { data: eventCards },
+        ] = await Promise.all([
+          supabase.from("users").select("*", { count: "exact", head: true }),
+          supabase.from("prestasi").select("*", { count: "exact", head: true }).in("status", ["Juara 1", "Juara 2", "Juara 3"]),
+          supabase.from("events").select("*", { count: "exact", head: true }),
+          supabase.from("projects").select("*", { count: "exact", head: true }),
+          supabase.from("lomba").select("user_id"),
+          supabase.from("lomba").select("cabang"),
+          supabase.from("prestasi").select("id, title, cabang, photo_url, status").in("status", ["Juara 1", "Juara 2", "Juara 3"]).eq("is_published", true).limit(6),
+          supabase.from("projects").select("id, title, photo_url, storytelling").eq("is_published", true).limit(6),
+          supabase.from("events").select("id, title, date, location, time").gte("date", today).order("date", { ascending: true }).limit(3),
+        ]);
+
         const uniqueParticipants = new Set((lombaUsers || []).map(l => l.user_id)).size;
-        const { data: lombaAll } = await supabase.from("lomba").select("cabang");
         const cabangCount = {};
         (lombaAll || []).forEach(l => {
           const c = l.cabang || "Lainnya";
@@ -110,6 +137,7 @@ export default function HomePage() {
           .sort((a, b) => b.value - a.value)
           .slice(0, 5);
         const total = userCount || 105;
+
         setStats({
           totalUsers: total,
           totalPrestasi: prestasiCount || 0,
@@ -119,11 +147,14 @@ export default function HomePage() {
           lombaTotal: total,
           cabangData,
         });
+        setPrestasi(prestasiCards || []);
+        setProjects(projectCards || []);
+        setEvents(eventCards || []);
       } catch (err) {
         console.error("Stats fetch error:", err);
       }
     }
-    fetchStats();
+    fetchAll();
   }, []);
 
   return (
@@ -135,7 +166,7 @@ export default function HomePage() {
           backgroundSize: "80px 80px",
         }} />
         <div className="absolute inset-0 opacity-[0.12]" style={{
-          backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Kampus_IPB_Dramaga%2C_Bogor%2C_Jawa_Barat.jpg/1280px-Kampus_IPB_Dramaga%2C_Bogor%2C_Jawa_Barat.jpg')",
+          backgroundImage: `url('${base}assets/ipb-campus.jpg')`,
           backgroundSize: "cover", backgroundPosition: "center",
         }} />
         {/* Lime blob top-right */}
@@ -297,7 +328,22 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 mt-2">Prestasi Juara</h2>
           <p className="text-sm text-zinc-400 mt-2 max-w-lg">Pencapaian terbaik dari anggota Komprestasi IPB</p>
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <EmptyState icon={Trophy} title="Belum ada prestasi" sub="Prestasi juara akan muncul di sini" color="bg-amber-50" iconColor="text-amber-300" />
+            {prestasi.length === 0 ? (
+              <EmptyState icon={Trophy} title="Belum ada prestasi" sub="Prestasi juara akan muncul di sini" color="bg-amber-50" iconColor="text-amber-300" />
+            ) : (
+              prestasi.map(item => (
+                <div key={item.id} className="bg-white rounded-xl border border-zinc-200 p-5 flex flex-col gap-3">
+                  {item.photo_url && (
+                    <img src={item.photo_url} alt={item.title} className="w-full h-36 object-cover rounded-lg" />
+                  )}
+                  <div>
+                    <p className="font-bold text-zinc-900 text-sm leading-snug">{item.title}</p>
+                    <p className="text-xs text-zinc-400 mt-1">{item.cabang}</p>
+                    <span className="mt-2 inline-block text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">{item.status}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
@@ -307,7 +353,23 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 mt-2">Project</h2>
           <p className="text-sm text-zinc-400 mt-2">Karya dan project dari anggota</p>
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <EmptyState icon={Folder} title="Belum ada project" sub="Project anggota akan muncul di sini" color="bg-blue-50" iconColor="text-blue-300" />
+            {projects.length === 0 ? (
+              <EmptyState icon={Folder} title="Belum ada project" sub="Project anggota akan muncul di sini" color="bg-blue-50" iconColor="text-blue-300" />
+            ) : (
+              projects.map(item => (
+                <div key={item.id} className="bg-white rounded-xl border border-zinc-200 p-5 flex flex-col gap-3">
+                  {item.photo_url && (
+                    <img src={item.photo_url} alt={item.title} className="w-full h-36 object-cover rounded-lg" />
+                  )}
+                  <div>
+                    <p className="font-bold text-zinc-900 text-sm leading-snug">{item.title}</p>
+                    {item.storytelling && (
+                      <p className="text-xs text-zinc-400 mt-1 line-clamp-2">{item.storytelling}</p>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
@@ -324,7 +386,22 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <EmptyState icon={CalendarDays} title="Belum ada event" sub="Event mendatang akan muncul di sini" color="bg-emerald-50" iconColor="text-emerald-300" />
+            {events.length === 0 ? (
+              <EmptyState icon={CalendarDays} title="Belum ada event" sub="Event mendatang akan muncul di sini" color="bg-emerald-50" iconColor="text-emerald-300" />
+            ) : (
+              events.map(item => (
+                <div key={item.id} className="bg-white rounded-xl border border-zinc-200 p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                      <CalendarDays size={15} className="text-emerald-500" />
+                    </div>
+                    <p className="text-[10px] font-bold text-emerald-600">{formatDate(item.date)}</p>
+                  </div>
+                  <p className="font-bold text-zinc-900 text-sm leading-snug">{item.title}</p>
+                  {item.location && <p className="text-xs text-zinc-400 mt-1">{item.location}</p>}
+                </div>
+              ))
+            )}
           </div>
         </section>
 

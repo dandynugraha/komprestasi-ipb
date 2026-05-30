@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import SplashScreen from "@/components/SplashScreen";
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -55,7 +55,7 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <Router>
+      <Router basename={import.meta.env.BASE_URL}>
         <Routes>
           {/* Login — standalone (no navbar/footer) */}
           <Route path="login" element={<LoginPage />} />
