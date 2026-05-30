@@ -462,9 +462,9 @@ export default function HomePage() {
         >
           {[
             { icon: Users,       value: String(stats.totalUsers),                              label: "Total anggota", color: "from-royal-500 to-royal-600"   },
-            { icon: Trophy,      value: stats.totalPrestasi > 0 ? String(stats.totalPrestasi) : "—", label: "Prestasi",     color: "from-amber-400 to-orange-500"  },
-            { icon: CalendarDays,value: stats.totalEvents   > 0 ? String(stats.totalEvents)   : "—", label: "Event",        color: "from-emerald-500 to-emerald-600"},
-            { icon: Folder,      value: stats.totalProjects > 0 ? String(stats.totalProjects) : "—", label: "Project",      color: "from-blue-500 to-blue-600"     },
+            { icon: Trophy,      value: String(stats.totalPrestasi || 0), label: "Prestasi",     color: "from-amber-400 to-orange-500"  },
+            { icon: CalendarDays,value: String(stats.totalEvents   || 0), label: "Event",        color: "from-emerald-500 to-emerald-600"},
+            { icon: Folder,      value: String(stats.totalProjects || 0), label: "Project",      color: "from-blue-500 to-blue-600"     },
           ].map((s, i) => (
             <div key={i} className="text-center group cursor-default">
               <div className={`w-11 h-11 rounded-lg bg-gradient-to-br ${s.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-all duration-200`} style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.12)" }}>
