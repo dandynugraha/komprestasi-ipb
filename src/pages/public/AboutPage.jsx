@@ -14,26 +14,27 @@ function getInitials(name) {
   return name.slice(0, 2).toUpperCase();
 }
 
-function PersonPhoto({ name, photo, imgSize, fallbackBg = "bg-zinc-200", fallbackText = "text-zinc-500" }) {
+function PersonPhoto({ name, photo, imgSize, fallbackBg = "bg-zinc-200", fallbackText = "text-zinc-500", shadowColor = "from-zinc-300/50" }) {
   const [err, setErr] = useState(false);
   return (
-    <div className={`${imgSize} rounded-full overflow-hidden border-4 border-white shadow-xl flex-shrink-0`}>
+    <div className={`relative ${imgSize} flex items-end justify-center flex-shrink-0`}>
+      <div className={`absolute bottom-0 w-3/4 h-5 bg-gradient-to-t ${shadowColor} to-transparent rounded-full blur-md`} />
       {err ? (
-        <div className={`w-full h-full ${fallbackBg} ${fallbackText} flex items-center justify-center font-black text-xl`}>
+        <div className={`relative w-3/4 h-3/4 rounded-full ${fallbackBg} ${fallbackText} flex items-center justify-center font-black text-xl`}>
           {getInitials(name)}
         </div>
       ) : (
-        <img src={photoUrl(photo)} alt={name} className="w-full h-full object-cover" onError={() => setErr(true)} />
+        <img src={photoUrl(photo)} alt={name} className="relative w-full h-full object-contain drop-shadow-lg" onError={() => setErr(true)} />
       )}
     </div>
   );
 }
 
-function PersonCard({ name, role, photo, imgSize = "w-28 h-28", fallbackBg = "bg-zinc-200", fallbackText = "text-zinc-500", prominent = false }) {
+function PersonCard({ name, role, photo, imgSize = "w-28 h-36", fallbackBg = "bg-zinc-200", fallbackText = "text-zinc-500", prominent = false, shadowColor = "from-zinc-300/50" }) {
   return (
     <div className="flex flex-col items-center text-center gap-3 group transition-transform duration-200 hover:scale-105">
       <div className={prominent ? "drop-shadow-[0_0_20px_rgba(74,31,181,0.28)]" : ""}>
-        <PersonPhoto name={name} photo={photo} imgSize={imgSize} fallbackBg={fallbackBg} fallbackText={fallbackText} />
+        <PersonPhoto name={name} photo={photo} imgSize={imgSize} fallbackBg={fallbackBg} fallbackText={fallbackText} shadowColor={shadowColor} />
       </div>
       <div>
         <p className={`font-black text-zinc-900 leading-tight ${prominent ? "text-base" : "text-sm"}`}>{name}</p>
@@ -296,7 +297,7 @@ export default function AboutPage() {
           </div>
           <div className="flex flex-wrap justify-center gap-10">
             {supervisors.map((s) => (
-              <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-28 h-28" />
+              <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-36 h-44" shadowColor="from-zinc-300/50" />
             ))}
           </div>
         </motion.div>
@@ -317,8 +318,9 @@ export default function AboutPage() {
                 name={b.name}
                 role={b.role}
                 photo={b.photo}
-                imgSize={b.prominent ? "w-32 h-32" : "w-28 h-28"}
+                imgSize={b.prominent ? "w-40 h-48" : "w-36 h-44"}
                 prominent={b.prominent}
+                shadowColor="from-zinc-300/50"
               />
             ))}
           </div>
@@ -341,17 +343,18 @@ export default function AboutPage() {
                 name={cda.kadiv.name}
                 role={cda.kadiv.role}
                 photo={cda.kadiv.photo}
-                imgSize="w-36 h-36"
+                imgSize="w-36 h-44"
                 prominent
                 fallbackBg="bg-royal-100"
                 fallbackText="text-royal-600"
+                shadowColor="from-royal-300/30"
               />
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-5 text-center">Tim Staff</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 justify-items-center">
                 {cda.staff.map((s) => (
-                  <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-24 h-24" fallbackBg="bg-royal-100" fallbackText="text-royal-600" />
+                  <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-28 h-36" fallbackBg="bg-royal-100" fallbackText="text-royal-600" shadowColor="from-royal-300/30" />
                 ))}
               </div>
             </div>
@@ -375,17 +378,18 @@ export default function AboutPage() {
                 name={heg.kadiv.name}
                 role={heg.kadiv.role}
                 photo={heg.kadiv.photo}
-                imgSize="w-36 h-36"
+                imgSize="w-36 h-44"
                 prominent
                 fallbackBg="bg-pink-100"
                 fallbackText="text-pink-600"
+                shadowColor="from-pink-300/30"
               />
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-5 text-center">Tim Staff</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 justify-items-center">
                 {heg.staff.map((s) => (
-                  <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-24 h-24" fallbackBg="bg-pink-100" fallbackText="text-pink-600" />
+                  <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-28 h-36" fallbackBg="bg-pink-100" fallbackText="text-pink-600" shadowColor="from-pink-300/30" />
                 ))}
               </div>
             </div>
@@ -409,17 +413,18 @@ export default function AboutPage() {
                 name={mbd.kadiv.name}
                 role={mbd.kadiv.role}
                 photo={mbd.kadiv.photo}
-                imgSize="w-36 h-36"
+                imgSize="w-36 h-44"
                 prominent
                 fallbackBg="bg-violet-100"
                 fallbackText="text-violet-600"
+                shadowColor="from-violet-300/30"
               />
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-5 text-center">Tim Staff</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 justify-items-center">
                 {mbd.staff.map((s) => (
-                  <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-24 h-24" fallbackBg="bg-violet-100" fallbackText="text-violet-600" />
+                  <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-28 h-36" fallbackBg="bg-violet-100" fallbackText="text-violet-600" shadowColor="from-violet-300/30" />
                 ))}
               </div>
             </div>
@@ -446,10 +451,11 @@ export default function AboutPage() {
                   name={l.name}
                   role={l.role}
                   photo={l.photo}
-                  imgSize="w-36 h-36"
+                  imgSize="w-36 h-44"
                   prominent
                   fallbackBg="bg-teal-100"
                   fallbackText="text-teal-600"
+                  shadowColor="from-teal-300/30"
                 />
               ))}
             </div>
@@ -457,7 +463,7 @@ export default function AboutPage() {
               <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-5 text-center">Tim Staff</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 justify-items-center">
                 {korvoks.staff.map((s) => (
-                  <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-24 h-24" fallbackBg="bg-teal-100" fallbackText="text-teal-600" />
+                  <PersonCard key={s.name} name={s.name} role={s.role} photo={s.photo} imgSize="w-28 h-36" fallbackBg="bg-teal-100" fallbackText="text-teal-600" shadowColor="from-teal-300/30" />
                 ))}
               </div>
             </div>
