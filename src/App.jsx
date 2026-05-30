@@ -21,6 +21,7 @@ import MyLombaPage from "@/pages/rona/MyLombaPage";
 import MyJadwalPage from "@/pages/rona/MyJadwalPage";
 import MyPengeluaranPage from "@/pages/rona/MyPengeluaranPage";
 import MyEventPage from "@/pages/rona/MyEventPage";
+import MyUploadsPage from "@/pages/rona/MyUploadsPage";
 import PesenDesainPage from "@/pages/rona/PesenDesainPage";
 
 // Dashboard — Aksara pages
@@ -78,6 +79,7 @@ export default function App() {
             <Route path="jadwal" element={<MyJadwalPage />} />
             <Route path="pengeluaran" element={<MyPengeluaranPage />} />
             <Route path="event" element={<MyEventPage />} />
+            <Route path="my-uploads" element={<MyUploadsPage />} />
             <Route path="pesen-desain" element={<PesenDesainPage />} />
             <Route path="create-event" element={<CreateEventPage />} />
             <Route path="settings" element={<PlaceholderPage title="Settings" />} />

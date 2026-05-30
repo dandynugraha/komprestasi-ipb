@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, ArrowRight, Users, CalendarDays, Folder, Sparkles, Zap, BookOpen, BarChart3, PieChart } from "lucide-react";
+import {
+  Trophy, ArrowRight, Users, CalendarDays, Folder, Sparkles, Zap,
+  BookOpen, BarChart3, PieChart, MapPin, Clock, X, ExternalLink,
+} from "lucide-react";
 import siteConfig from "@/config/site.config";
 import { supabase } from "@/lib/supabase";
+import { parseDescription } from "@/lib/eventUtils";
 
 const base = import.meta.env.BASE_URL || "/";
 
@@ -31,7 +35,6 @@ function EmptyState({ icon: Icon, title, sub, color = "bg-royal-50", iconColor =
   );
 }
 
-/* Mini donut chart SVG */
 function DonutChart({ percent = 0, label, sub1, sub2 }) {
   const r = 54, c = 2 * Math.PI * r;
   const filled = c * (percent / 100);
@@ -57,7 +60,6 @@ function DonutChart({ percent = 0, label, sub1, sub2 }) {
   );
 }
 
-/* Mini bar chart */
 function BarChart({ data }) {
   const max = Math.max(...data.map(d => d.value), 1);
   return (
@@ -85,6 +87,123 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function formatTime(t) {
+  if (!t) return null;
+  return t.slice(0, 5);
+}
+
+/* Detail modal — works for prestasi and project */
+function ItemDetailModal({ item, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {item.photo_url && (
+          <img src={item.photo_url} alt={item.title} className="w-full h-64 object-cover rounded-t-2xl" />
+        )}
+        <div className="p-6">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {item._type === "prestasi" && item.status && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">{item.status}</span>
+              )}
+              {item.cabang && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{item.cabang}</span>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0 hover:bg-zinc-200 transition-colors"
+            >
+              <X size={14} className="text-zinc-500" />
+            </button>
+          </div>
+          <h2 className="text-base font-black text-zinc-900 leading-snug mb-1">{item.title}</h2>
+          {item.users?.name && (
+            <p className="text-xs text-zinc-400 mb-4">oleh {item.users.name}</p>
+          )}
+          {item.storytelling && (
+            <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-line">{item.storytelling}</p>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* Event detail modal */
+function EventDetailModal({ event, onClose }) {
+  const { imageUrl, gformUrl, text } = parseDescription(event.description);
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {imageUrl && (
+          <img src={imageUrl} alt={event.title} className="w-full h-52 object-cover rounded-t-2xl" />
+        )}
+        <div className="p-6">
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <h2 className="text-base font-black text-zinc-900 leading-snug">{event.title}</h2>
+            <button
+              onClick={onClose}
+              className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0 hover:bg-zinc-200 transition-colors"
+            >
+              <X size={14} className="text-zinc-500" />
+            </button>
+          </div>
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
+              <CalendarDays size={13} className="text-emerald-500 flex-shrink-0" />
+              {formatDate(event.date)}
+            </div>
+            {(event.time_start || event.time_end) && (
+              <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <Clock size={13} className="text-emerald-500 flex-shrink-0" />
+                {formatTime(event.time_start)}{event.time_end ? ` – ${formatTime(event.time_end)}` : ""}
+              </div>
+            )}
+            {event.location && (
+              <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <MapPin size={13} className="text-emerald-500 flex-shrink-0" />
+                {event.location}
+              </div>
+            )}
+          </div>
+          {text && <p className="text-sm text-zinc-600 leading-relaxed mb-5 whitespace-pre-line">{text}</p>}
+          {gformUrl && (
+            <a
+              href={gformUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
+            >
+              <ExternalLink size={14} /> Daftar Sekarang
+            </a>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const [stats, setStats] = useState({
     totalUsers: 105,
@@ -98,6 +217,8 @@ export default function HomePage() {
   const [prestasi, setPrestasi] = useState([]);
   const [projects, setProjects] = useState([]);
   const [events, setEvents] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     async function fetchAll() {
@@ -121,9 +242,21 @@ export default function HomePage() {
           supabase.from("projects").select("*", { count: "exact", head: true }),
           supabase.from("lomba").select("user_id"),
           supabase.from("lomba").select("cabang"),
-          supabase.from("prestasi").select("id, title, cabang, photo_url, status").in("status", ["Juara 1", "Juara 2", "Juara 3"]).eq("is_published", true).limit(6),
-          supabase.from("projects").select("id, title, photo_url, storytelling").eq("is_published", true).limit(6),
-          supabase.from("events").select("id, title, date, location, time").gte("date", today).order("date", { ascending: true }).limit(3),
+          supabase.from("prestasi")
+            .select("id, title, cabang, photo_url, status, storytelling, users(name)")
+            .in("status", ["Juara 1", "Juara 2", "Juara 3"])
+            .eq("is_published", true)
+            .limit(6),
+          supabase.from("projects")
+            .select("id, title, photo_url, storytelling, users(name)")
+            .eq("is_published", true)
+            .limit(6),
+          supabase.from("events")
+            .select("id, title, date, time_start, time_end, location, description")
+            .eq("visibility", "eksternal")
+            .gte("date", today)
+            .order("date", { ascending: true })
+            .limit(3),
         ]);
 
         const uniqueParticipants = new Set((lombaUsers || []).map(l => l.user_id)).size;
@@ -147,8 +280,8 @@ export default function HomePage() {
           lombaTotal: total,
           cabangData,
         });
-        setPrestasi(prestasiCards || []);
-        setProjects(projectCards || []);
+        setPrestasi((prestasiCards || []).map(i => ({ ...i, _type: "prestasi" })));
+        setProjects((projectCards || []).map(i => ({ ...i, _type: "project" })));
         setEvents(eventCards || []);
       } catch (err) {
         console.error("Stats fetch error:", err);
@@ -161,15 +294,11 @@ export default function HomePage() {
     <div>
       {/* HERO */}
       <section className="hero-gradient wave-bottom relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.05]" style={{
-          backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
-        }} />
-        <div className="absolute inset-0 opacity-[0.12]" style={{
+        {/* Campus image — FIX 13: increased opacity, grid overlay removed */}
+        <div className="absolute inset-0 opacity-[0.18]" style={{
           backgroundImage: `url('${base}assets/ipb-campus.jpg')`,
           backgroundSize: "cover", backgroundPosition: "center",
         }} />
-        {/* Lime blob top-right */}
         <div className="absolute pointer-events-none" style={{
           top: "-80px", right: "-80px", width: "480px", height: "480px", borderRadius: "50%",
           background: "radial-gradient(circle, rgba(198,255,0,0.14) 0%, transparent 65%)",
@@ -193,7 +322,6 @@ export default function HomePage() {
                   {siteConfig.tagline}
                 </motion.p>
 
-                {/* Floating stat cards */}
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="mt-6 flex flex-wrap gap-3">
                   <motion.div
                     animate={{ y: [0, -7, 0] }}
@@ -305,10 +433,10 @@ export default function HomePage() {
           viewport={{ once: true }}
         >
           {[
-            { icon: Users, value: String(stats.totalUsers), label: "Total anggota", color: "from-royal-500 to-royal-600" },
-            { icon: Trophy, value: stats.totalPrestasi > 0 ? String(stats.totalPrestasi) : "—", label: "Prestasi", color: "from-amber-400 to-orange-500" },
-            { icon: CalendarDays, value: stats.totalEvents > 0 ? String(stats.totalEvents) : "—", label: "Event", color: "from-emerald-500 to-emerald-600" },
-            { icon: Folder, value: stats.totalProjects > 0 ? String(stats.totalProjects) : "—", label: "Project", color: "from-blue-500 to-blue-600" },
+            { icon: Users,       value: String(stats.totalUsers),                              label: "Total anggota", color: "from-royal-500 to-royal-600"   },
+            { icon: Trophy,      value: stats.totalPrestasi > 0 ? String(stats.totalPrestasi) : "—", label: "Prestasi",     color: "from-amber-400 to-orange-500"  },
+            { icon: CalendarDays,value: stats.totalEvents   > 0 ? String(stats.totalEvents)   : "—", label: "Event",        color: "from-emerald-500 to-emerald-600"},
+            { icon: Folder,      value: stats.totalProjects > 0 ? String(stats.totalProjects) : "—", label: "Project",      color: "from-blue-500 to-blue-600"     },
           ].map((s, i) => (
             <div key={i} className="text-center group cursor-default">
               <div className={`w-11 h-11 rounded-lg bg-gradient-to-br ${s.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-all duration-200`} style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.12)" }}>
@@ -322,7 +450,7 @@ export default function HomePage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8 pb-24 space-y-24">
-        {/* PRESTASI */}
+        {/* PRESTASI — FIX 11: clickable cards with detail modal */}
         <section>
           <span className="text-xs font-black text-royal-500 uppercase tracking-widest">Showcase</span>
           <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 mt-2">Prestasi Juara</h2>
@@ -332,13 +460,18 @@ export default function HomePage() {
               <EmptyState icon={Trophy} title="Belum ada prestasi" sub="Prestasi juara akan muncul di sini" color="bg-amber-50" iconColor="text-amber-300" />
             ) : (
               prestasi.map(item => (
-                <div key={item.id} className="bg-white rounded-xl border border-zinc-200 p-5 flex flex-col gap-3">
+                <div
+                  key={item.id}
+                  className="bg-white rounded-xl border border-zinc-200 p-5 flex flex-col gap-3 cursor-pointer hover:border-royal-200 hover:shadow-md transition-all"
+                  onClick={() => setSelectedItem(item)}
+                >
                   {item.photo_url && (
                     <img src={item.photo_url} alt={item.title} className="w-full h-36 object-cover rounded-lg" />
                   )}
                   <div>
                     <p className="font-bold text-zinc-900 text-sm leading-snug">{item.title}</p>
                     <p className="text-xs text-zinc-400 mt-1">{item.cabang}</p>
+                    {item.users?.name && <p className="text-xs text-zinc-300 mt-0.5">oleh {item.users.name}</p>}
                     <span className="mt-2 inline-block text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">{item.status}</span>
                   </div>
                 </div>
@@ -347,7 +480,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* PROJECT */}
+        {/* PROJECT — FIX 11: clickable cards with detail modal */}
         <section>
           <span className="text-xs font-black text-blue-500 uppercase tracking-widest">Karya</span>
           <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 mt-2">Project</h2>
@@ -357,12 +490,17 @@ export default function HomePage() {
               <EmptyState icon={Folder} title="Belum ada project" sub="Project anggota akan muncul di sini" color="bg-blue-50" iconColor="text-blue-300" />
             ) : (
               projects.map(item => (
-                <div key={item.id} className="bg-white rounded-xl border border-zinc-200 p-5 flex flex-col gap-3">
+                <div
+                  key={item.id}
+                  className="bg-white rounded-xl border border-zinc-200 p-5 flex flex-col gap-3 cursor-pointer hover:border-blue-200 hover:shadow-md transition-all"
+                  onClick={() => setSelectedItem(item)}
+                >
                   {item.photo_url && (
                     <img src={item.photo_url} alt={item.title} className="w-full h-36 object-cover rounded-lg" />
                   )}
                   <div>
                     <p className="font-bold text-zinc-900 text-sm leading-snug">{item.title}</p>
+                    {item.users?.name && <p className="text-xs text-zinc-300 mt-0.5">oleh {item.users.name}</p>}
                     {item.storytelling && (
                       <p className="text-xs text-zinc-400 mt-1 line-clamp-2">{item.storytelling}</p>
                     )}
@@ -373,13 +511,13 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* EVENT */}
+        {/* EVENT MENDATANG — hanya eksternal */}
         <section>
           <div className="flex items-end justify-between">
             <div>
               <span className="text-xs font-black text-emerald-500 uppercase tracking-widest">Kegiatan</span>
               <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 mt-2">Event Mendatang</h2>
-              <p className="text-sm text-zinc-400 mt-2">Event terbuka dari divisi CDA dan HEG</p>
+              <p className="text-sm text-zinc-400 mt-2">Event terbuka untuk umum</p>
             </div>
             <Link to="/event" className="text-xs text-royal-600 font-bold flex items-center gap-1 hover:underline">
               Lihat semua <ArrowRight size={12} />
@@ -389,18 +527,43 @@ export default function HomePage() {
             {events.length === 0 ? (
               <EmptyState icon={CalendarDays} title="Belum ada event" sub="Event mendatang akan muncul di sini" color="bg-emerald-50" iconColor="text-emerald-300" />
             ) : (
-              events.map(item => (
-                <div key={item.id} className="bg-white rounded-xl border border-zinc-200 p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                      <CalendarDays size={15} className="text-emerald-500" />
+              events.map(item => {
+                const { gformUrl, text } = parseDescription(item.description);
+                return (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-xl border border-zinc-200 p-5 flex flex-col gap-3 cursor-pointer hover:border-emerald-200 hover:shadow-md transition-all"
+                    onClick={() => setSelectedEvent(item)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                        <CalendarDays size={15} className="text-emerald-500" />
+                      </div>
+                      <p className="text-[10px] font-bold text-emerald-600">{formatDate(item.date)}</p>
                     </div>
-                    <p className="text-[10px] font-bold text-emerald-600">{formatDate(item.date)}</p>
+                    <div className="flex-1">
+                      <p className="font-bold text-zinc-900 text-sm leading-snug">{item.title}</p>
+                      {item.location && (
+                        <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1">
+                          <MapPin size={10} /> {item.location}
+                        </p>
+                      )}
+                      {text && <p className="text-xs text-zinc-400 mt-1.5 line-clamp-2">{text}</p>}
+                    </div>
+                    {gformUrl && (
+                      <a
+                        href={gformUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors"
+                      >
+                        <ExternalLink size={11} /> Daftar
+                      </a>
+                    )}
                   </div>
-                  <p className="font-bold text-zinc-900 text-sm leading-snug">{item.title}</p>
-                  {item.location && <p className="text-xs text-zinc-400 mt-1">{item.location}</p>}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </section>
@@ -417,9 +580,7 @@ export default function HomePage() {
             backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }} />
-          {/* Accent bar top */}
           <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(198,255,0,0.5), transparent)" }} />
-          {/* Lime blob */}
           <div className="absolute pointer-events-none" style={{
             top: "-60px", right: "-60px", width: "280px", height: "280px", borderRadius: "50%",
             background: "radial-gradient(circle, rgba(198,255,0,0.16) 0%, transparent 65%)",
@@ -448,6 +609,14 @@ export default function HomePage() {
           </div>
         </motion.section>
       </div>
+
+      {/* Modals */}
+      {selectedItem && (
+        <ItemDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
+      {selectedEvent && (
+        <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      )}
     </div>
   );
 }

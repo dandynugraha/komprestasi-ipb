@@ -105,23 +105,34 @@ export default function LoginPage() {
       </div>
 
       {/* Right — form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-white">
+      <div className="flex-1 flex flex-col lg:items-center lg:justify-center bg-white">
+        {/* Mobile purple hero header */}
+        <div
+          className="lg:hidden relative overflow-hidden rounded-b-3xl flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, #0D0520 0%, #1A0A3E 50%, #2E1065 100%)", minHeight: "200px" }}
+        >
+          <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          <div className="absolute pointer-events-none" style={{ top: "-50px", right: "-50px", width: "200px", height: "200px", borderRadius: "50%", background: "radial-gradient(circle, rgba(198,255,0,0.2) 0%, transparent 65%)" }} />
+          <div className="absolute pointer-events-none" style={{ bottom: "-30px", left: "-30px", width: "130px", height: "130px", borderRadius: "50%", background: "radial-gradient(circle, rgba(123,77,255,0.25) 0%, transparent 65%)" }} />
+          <div className="relative px-8 pt-12 pb-12">
+            <img
+              src={siteConfig.logos.splash}
+              alt=""
+              className="w-12 h-12 object-contain mb-4"
+              style={{ filter: "drop-shadow(0 0 16px rgba(198,255,0,0.32))" }}
+              onError={(e) => { e.target.style.display = "none"; }}
+            />
+            <h2 className="text-2xl font-black text-white leading-tight">Komprestasi IPB</h2>
+            <p className="text-sm text-white/45 mt-1.5 leading-relaxed max-w-xs">{siteConfig.tagline}</p>
+          </div>
+        </div>
+
         <motion.div
-          className="w-full max-w-sm"
+          className="w-full max-w-sm mx-auto px-6 py-8 lg:py-0"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4 }}
         >
-          {/* Mobile logo */}
-          <div className="lg:hidden mb-8">
-            <img
-              src={siteConfig.logos.splash}
-              alt=""
-              className="w-14 h-14 object-contain mb-4"
-              onError={(e) => { e.target.style.display = "none"; }}
-            />
-          </div>
-
           <h1 className="text-2xl font-black text-zinc-900">Masuk</h1>
           <p className="text-sm text-zinc-400 mt-1 mb-8">Login ke dashboard {siteConfig.shortName}</p>
 

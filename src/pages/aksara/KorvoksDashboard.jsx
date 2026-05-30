@@ -29,10 +29,10 @@ export default function KorvoksDashboard() {
       { data: project },
       { data: lomba },
     ] = await Promise.all([
-      supabase.from("prestasi").select("*").eq("lokasi", "Vokasi").order("created_at", { ascending: false }),
-      supabase.from("kegiatan").select("*").eq("lokasi", "Vokasi").order("created_at", { ascending: false }),
-      supabase.from("projects").select("*").eq("lokasi", "Vokasi").order("created_at", { ascending: false }),
-      supabase.from("lomba").select("*").eq("lokasi", "Vokasi").order("created_at", { ascending: false }),
+      supabase.from("prestasi").select("*, users(name)").eq("lokasi", "Vokasi").order("created_at", { ascending: false }),
+      supabase.from("kegiatan").select("*, users(name)").eq("lokasi", "Vokasi").order("created_at", { ascending: false }),
+      supabase.from("projects").select("*, users(name)").eq("lokasi", "Vokasi").order("created_at", { ascending: false }),
+      supabase.from("lomba").select("*, users(name)").eq("lokasi", "Vokasi").order("created_at", { ascending: false }),
     ]);
 
     setData({
@@ -127,6 +127,9 @@ export default function KorvoksDashboard() {
                 <p className="text-xs text-zinc-400 mt-1">{item.cabang}{item.cabang && item.status ? " · " : ""}{item.status}</p>
               )}
               <p className="text-[10px] text-zinc-300 mt-1">{formatDate(item.created_at)}</p>
+              {item.users?.name && (
+                <p className="text-xs text-zinc-400 mt-0.5">oleh {item.users.name}</p>
+              )}
             </div>
           ))}
         </div>

@@ -5,6 +5,12 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import siteConfig from "@/config/site.config";
 
+const CLUSTER_OPTIONS = [
+  "Penulisan Ilmiah dan Olimpiade Sains",
+  "Bisnis dan Analisis Strategi",
+  "Desain dan Visual Kreatif",
+];
+
 function formatDate(d) {
   if (!d) return null;
   return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
@@ -27,6 +33,11 @@ export default function MyLombaPage() {
   const [cabang, setCabang] = useState("");
   const [status, setStatus] = useState(siteConfig.lombaStatuses[0]);
   const [deadline, setDeadline] = useState("");
+  const [cluster, setCluster] = useState("");
+
+  useEffect(() => {
+    if (profile?.cluster && !cluster) setCluster(profile.cluster);
+  }, [profile?.cluster]);
 
   useEffect(() => {
     if (user) fetchLomba();
@@ -51,7 +62,7 @@ export default function MyLombaPage() {
         cabang: cabang.trim(),
         status,
         deadline: deadline || null,
-        cluster: profile?.cluster || null,
+        cluster: cluster || profile?.cluster || null,
         lokasi: profile?.lokasi || null,
       });
       if (error) throw error;
@@ -121,6 +132,19 @@ export default function MyLombaPage() {
               placeholder="Cabang"
               className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs placeholder:text-zinc-300 focus:outline-none focus:border-royal-300 focus:ring-4 focus:ring-royal-100/50 transition-all"
             />
+            <div className="relative">
+              <select
+                value={cluster}
+                onChange={(e) => setCluster(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-700 focus:outline-none focus:border-royal-300 focus:ring-4 focus:ring-royal-100/50 transition-all appearance-none"
+              >
+                <option value="">Pilih cluster...</option>
+                {CLUSTER_OPTIONS.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+            </div>
             <div className="relative">
               <select
                 value={status}

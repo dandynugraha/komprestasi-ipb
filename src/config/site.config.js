@@ -40,7 +40,7 @@ const siteConfig = {
     anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnYnVocXFycHF6eWRoc3J4eGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NzMzNjAsImV4cCI6MjA5NTU0OTM2MH0.AL0_LNYA_OBFDajwmJCbDdCEY07NmIc4_Sn9B7YtABU",
   },
 
-  google: { clientId: "YOUR_GOOGLE_CLIENT_ID", calendarScopes: "https://www.googleapis.com/auth/calendar" },
+  google: { clientId: "YOUR_GOOGLE_CLIENT_ID", calendarScopes: "https://www.googleapis.com/auth/calendar", sharedCalendarEmail: "komprestasi.ipb@gmail.com" },
   sps: { baseUrl: "YOUR_SPS_API_URL", clientId: "YOUR_SPS_CLIENT_ID" },
 
   publicNav: [

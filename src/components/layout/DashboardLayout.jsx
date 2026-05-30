@@ -74,6 +74,7 @@ function getNavItems(profile) {
   items.push({ icon: "award", label: "Upload Prestasi", path: "/dashboard/upload/prestasi" });
   items.push({ icon: "activity", label: "Upload Kegiatan", path: "/dashboard/upload/kegiatan" });
   items.push({ icon: "folder", label: "Upload Project", path: "/dashboard/upload/project" });
+  items.push({ icon: "upload", label: "My Uploads", path: "/dashboard/my-uploads" });
 
   // Lainnya
   items.push({ section: "Lainnya" });

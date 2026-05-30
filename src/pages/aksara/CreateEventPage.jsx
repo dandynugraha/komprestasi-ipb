@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Clock, MapPin, Users, Eye, FileText, ChevronLeft } from "lucide-react";
+import {
+  CalendarDays, Clock, MapPin, Users, Eye, FileText,
+  ChevronLeft, Image as ImageIcon, Upload, ExternalLink,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
+import { encodeDescription } from "@/lib/eventUtils";
 
 const VISIBILITY_OPTIONS = [
   { value: "internal", label: "Internal", desc: "Hanya anggota Komprestasi" },
@@ -12,6 +16,7 @@ const VISIBILITY_OPTIONS = [
 export default function CreateEventPage() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -22,13 +27,36 @@ export default function CreateEventPage() {
     location: "",
     visibility: "internal",
     spots: "",
+    gformUrl: "",
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handleImageFile(file) {
+    if (!file || !file.type.startsWith("image/")) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    setIsDragging(false);
+    handleImageFile(e.dataTransfer.files[0]);
+  }
+
+  function removeImage() {
+    setImageFile(null);
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   async function handleSubmit(e) {
@@ -41,26 +69,40 @@ export default function CreateEventPage() {
     }
 
     setLoading(true);
-    const { error: insertError } = await supabase.from("events").insert({
-      title: form.title.trim(),
-      description: form.description.trim() || null,
-      date: form.date,
-      time_start: form.time_start,
-      time_end: form.time_end,
-      location: form.location.trim(),
-      visibility: form.visibility,
-      spots: form.spots ? parseInt(form.spots, 10) : null,
-      created_by: user?.id ?? null,
-      divisi: profile?.divisi ?? null,
-    });
-    setLoading(false);
+    try {
+      let imageUrl = null;
+      if (imageFile) {
+        const ext = imageFile.name.split(".").pop();
+        const path = `events/${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("uploads").upload(path, imageFile);
+        if (upErr) throw upErr;
+        const { data: { publicUrl } } = supabase.storage.from("uploads").getPublicUrl(path);
+        imageUrl = publicUrl;
+      }
 
-    if (insertError) {
-      setError(insertError.message);
-      return;
+      const gformUrl = form.visibility === "eksternal" ? (form.gformUrl.trim() || null) : null;
+      const encodedDesc = encodeDescription(form.description.trim() || null, imageUrl, gformUrl);
+
+      const { error: insertError } = await supabase.from("events").insert({
+        title: form.title.trim(),
+        description: encodedDesc,
+        date: form.date,
+        time_start: form.time_start,
+        time_end: form.time_end,
+        location: form.location.trim(),
+        visibility: form.visibility,
+        spots: form.spots ? parseInt(form.spots, 10) : null,
+        created_by: user?.id ?? null,
+        divisi: profile?.role ?? null,
+      });
+
+      if (insertError) throw insertError;
+      navigate("/dashboard/cda");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    navigate("/dashboard/heg");
   }
 
   return (
@@ -96,6 +138,51 @@ export default function CreateEventPage() {
             onChange={handleChange}
             placeholder="Nama event..."
             className="w-full text-sm text-zinc-900 placeholder:text-zinc-300 bg-zinc-50 rounded-lg px-3 py-2.5 border border-zinc-100 focus:outline-none focus:border-royal-400 focus:ring-1 focus:ring-royal-400 transition"
+          />
+        </div>
+
+        {/* Image Upload */}
+        <div className="bg-white rounded-xl border border-zinc-100 p-4">
+          <label className="block text-xs font-bold text-zinc-700 mb-2 flex items-center gap-1.5">
+            <ImageIcon size={12} className="text-zinc-400" />
+            Gambar Event (opsional)
+          </label>
+          {imagePreview ? (
+            <div className="relative">
+              <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white text-sm font-bold flex items-center justify-center hover:bg-black/70 transition-colors"
+              >
+                ×
+              </button>
+            </div>
+          ) : (
+            <div
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`h-32 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors ${
+                isDragging
+                  ? "border-royal-400 bg-royal-50"
+                  : "border-zinc-200 bg-zinc-50 hover:border-royal-300 hover:bg-zinc-100"
+              }`}
+            >
+              <Upload size={18} className="text-zinc-300 mb-1.5" />
+              <p className="text-xs text-zinc-400">
+                Drop gambar atau <span className="text-royal-500 font-bold">klik untuk pilih</span>
+              </p>
+              <p className="text-[10px] text-zinc-300 mt-0.5">JPG, PNG, WebP</p>
+            </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleImageFile(e.target.files[0])}
+            className="hidden"
           />
         </div>
 
@@ -215,6 +302,24 @@ export default function CreateEventPage() {
             />
           </div>
         </div>
+
+        {/* Google Form Link — only for eksternal */}
+        {form.visibility === "eksternal" && (
+          <div className="bg-white rounded-xl border border-zinc-100 p-4">
+            <label className="block text-xs font-bold text-zinc-700 mb-2 flex items-center gap-1.5">
+              <ExternalLink size={12} className="text-zinc-400" />
+              Link Google Form Pendaftaran
+            </label>
+            <input
+              type="url"
+              name="gformUrl"
+              value={form.gformUrl}
+              onChange={handleChange}
+              placeholder="https://forms.gle/..."
+              className="w-full text-sm text-zinc-900 placeholder:text-zinc-300 bg-zinc-50 rounded-lg px-3 py-2.5 border border-zinc-100 focus:outline-none focus:border-royal-400 focus:ring-1 focus:ring-royal-400 transition"
+            />
+          </div>
+        )}
 
         {error && (
           <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-100">

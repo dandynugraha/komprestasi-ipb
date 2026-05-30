@@ -45,11 +45,11 @@ export default function BPHDashboard() {
       { count: desainCount },
       { count: userCount },
     ] = await Promise.all([
-      supabase.from("prestasi").select("id, title, created_at").order("created_at", { ascending: false }).limit(10),
-      supabase.from("kegiatan").select("id, title, created_at").order("created_at", { ascending: false }).limit(10),
-      supabase.from("projects").select("id, title, created_at").order("created_at", { ascending: false }).limit(10),
-      supabase.from("events").select("id, title, created_at").order("created_at", { ascending: false }).limit(10),
-      supabase.from("pesen_desain").select("id, title, created_at, status").order("created_at", { ascending: false }).limit(10),
+      supabase.from("prestasi").select("id, title, created_at, users(name)").order("created_at", { ascending: false }).limit(10),
+      supabase.from("kegiatan").select("id, title, created_at, users(name)").order("created_at", { ascending: false }).limit(10),
+      supabase.from("projects").select("id, title, created_at, users(name)").order("created_at", { ascending: false }).limit(10),
+      supabase.from("events").select("id, title, created_at, users!created_by(name)").order("created_at", { ascending: false }).limit(10),
+      supabase.from("pesen_desain").select("id, title, created_at, status, users(name)").order("created_at", { ascending: false }).limit(10),
       supabase.from("prestasi").select("*", { count: "exact", head: true }),
       supabase.from("kegiatan").select("*", { count: "exact", head: true }),
       supabase.from("events").select("*", { count: "exact", head: true }),
@@ -58,11 +58,11 @@ export default function BPHDashboard() {
     ]);
 
     const merged = [
-      ...(prestasi || []).map(i => ({ ...i, _type: "prestasi" })),
-      ...(kegiatan || []).map(i => ({ ...i, _type: "kegiatan" })),
-      ...(project  || []).map(i => ({ ...i, _type: "project"  })),
-      ...(event    || []).map(i => ({ ...i, _type: "event"    })),
-      ...(desain   || []).map(i => ({ ...i, _type: "desain"   })),
+      ...(prestasi || []).map(i => ({ ...i, _type: "prestasi", _uploaderName: i.users?.name })),
+      ...(kegiatan || []).map(i => ({ ...i, _type: "kegiatan", _uploaderName: i.users?.name })),
+      ...(project  || []).map(i => ({ ...i, _type: "project",  _uploaderName: i.users?.name })),
+      ...(event    || []).map(i => ({ ...i, _type: "event",    _uploaderName: i.users?.name })),
+      ...(desain   || []).map(i => ({ ...i, _type: "desain",   _uploaderName: i.users?.name })),
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     setFeed(merged);
@@ -150,7 +150,10 @@ export default function BPHDashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-zinc-900 truncate">{item.title}</p>
-                  <p className="text-[10px] text-zinc-400">{formatDate(item.created_at)}</p>
+                  <p className="text-[10px] text-zinc-400">
+                    {formatDate(item.created_at)}
+                    {item._uploaderName ? ` · oleh ${item._uploaderName}` : ""}
+                  </p>
                 </div>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${cfg.color}`}>
                   {cfg.label}

@@ -55,7 +55,7 @@ export default function CDADashboard() {
 
   async function fetchAll() {
     const buildQuery = (table) => {
-      let q = supabase.from(table).select("*").order("created_at", { ascending: false });
+      let q = supabase.from(table).select("*, users(name)").order("created_at", { ascending: false });
       if (dbCluster) q = q.eq("cluster", dbCluster);
       return q;
     };
@@ -184,6 +184,9 @@ export default function CDADashboard() {
                 <p className="text-xs text-zinc-400 mt-1">{item.cabang}{item.cabang && item.status ? " · " : ""}{item.status}</p>
               )}
               <p className="text-[10px] text-zinc-300 mt-1">{formatDate(item.created_at)}</p>
+              {item.users?.name && (
+                <p className="text-xs text-zinc-400 mt-0.5">oleh {item.users.name}</p>
+              )}
             </div>
           ))}
         </div>
