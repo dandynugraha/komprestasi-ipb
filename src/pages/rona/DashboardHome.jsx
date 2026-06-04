@@ -40,7 +40,7 @@ const quickActions = [
   { icon: Award,    label: "Upload Prestasi", sub: "Foto & storytelling", path: "/dashboard/upload/prestasi", gradient: "from-amber-400 to-orange-500",   shadow: "rgba(251,146,60,0.35)"  },
   { icon: Activity, label: "Upload Kegiatan", sub: "Foto & storytelling", path: "/dashboard/upload/kegiatan", gradient: "from-emerald-500 to-emerald-600", shadow: "rgba(52,211,153,0.3)"   },
   { icon: Folder,   label: "Upload Project",  sub: "Foto & storytelling", path: "/dashboard/upload/project",  gradient: "from-blue-500 to-blue-600",       shadow: "rgba(59,130,246,0.3)"   },
-  { icon: Trophy,   label: "My Lomba",        sub: "Tracking status",     path: "/dashboard/lomba",           gradient: "from-royal-500 to-royal-600",     shadow: "rgba(74,31,181,0.3)"    },
+  { icon: Trophy,   label: "Lomba Saya",       sub: "Tracking status",     path: "/dashboard/lomba",           gradient: "from-royal-500 to-royal-600",     shadow: "rgba(74,31,181,0.3)"    },
 ];
 
 export default function DashboardHome() {
@@ -234,7 +234,7 @@ export default function DashboardHome() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center" style={{ boxShadow: "0 4px 10px rgba(59,130,246,0.3)" }}>
               <Calendar size={13} className="text-white" />
             </div>
-            My Jadwal
+            Jadwal Saya
           </h3>
           <div className="text-center py-6">
             <Calendar size={24} className="text-zinc-200 mx-auto mb-2" />
@@ -250,7 +250,7 @@ export default function DashboardHome() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center" style={{ boxShadow: "0 4px 10px rgba(52,211,153,0.3)" }}>
               <Wallet size={13} className="text-white" />
             </div>
-            My Pengeluaran
+            Pengeluaran Saya
           </h3>
           {pengeluaran.length === 0 ? (
             <div className="text-center py-4">

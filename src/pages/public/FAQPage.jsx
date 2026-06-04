@@ -7,7 +7,7 @@ const faqs = [
   { q: "Siapa saja yang bisa bergabung?", a: "Seluruh mahasiswa aktif IPB University dari kampus Dramaga maupun Vokasi dapat bergabung dengan Komprestasi IPB." },
   { q: "Apa itu Rona dan Aksara?", a: "Rona adalah anggota umum Komprestasi IPB yang mengikuti kegiatan dan lomba. Aksara adalah pengurus yang mengelola organisasi, terdiri dari CDA, HEG, MBD, Korvoks, dan BPH." },
   { q: "Apa saja cluster yang ada?", a: "Ada 3 cluster: Penulisan Ilmiah dan Olimpiade Sains, Bisnis dan Analisis Strategi, dan Desain dan Visual Kreatif." },
-  { q: "Bagaimana cara tracking lomba?", a: "Login ke dashboard, lalu buka menu My Lomba. Kamu bisa menambah lomba yang diikuti dan update statusnya. Status lomba akan terlihat di dashboard CDA cluster kamu." },
+  { q: "Bagaimana cara tracking lomba?", a: "Login ke dashboard, lalu buka menu Lomba Saya. Kamu bisa menambah lomba yang diikuti dan update statusnya. Status lomba akan terlihat di dashboard CDA cluster kamu." },
   { q: "Apa itu Pesen Desain?", a: "Fitur untuk divisi CDA, HEG, dan Korvoks untuk meminta bantuan desain dari tim MBD. Request akan masuk ke kanban MBD dan diproses sesuai antrian." },
   { q: "Siapa yang mengelola website ini?", a: "Website ini dikelola oleh divisi MBD (Media, Branding, dan Dokumentasi) Komprestasi IPB." },
 ];

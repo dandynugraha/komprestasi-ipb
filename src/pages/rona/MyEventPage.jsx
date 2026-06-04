@@ -47,7 +47,7 @@ export default function MyEventPage() {
           <CalendarDays size={18} className="text-white" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-zinc-900">My Event</h1>
+          <h1 className="text-lg font-bold text-zinc-900">Event Saya</h1>
           <p className="text-[11px] text-zinc-400">Event yang kamu ikuti</p>
         </div>
       </div>

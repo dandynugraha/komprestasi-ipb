@@ -45,7 +45,7 @@ export default function MyJadwalPage() {
           <Calendar size={18} className="text-white" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-zinc-900">My Jadwal</h1>
+          <h1 className="text-lg font-bold text-zinc-900">Jadwal Saya</h1>
           <p className="text-[11px] text-zinc-400">Sinkronisasi dengan Google Calendar</p>
         </div>
       </div>

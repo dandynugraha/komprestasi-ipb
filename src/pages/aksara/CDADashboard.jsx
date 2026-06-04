@@ -379,6 +379,135 @@ export default function CDADashboard() {
         </div>
       )}
 
+      {/* Analytics */}
+      <div className="mt-8 space-y-4">
+        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Analytics</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Leaderboard Prestasi */}
+          {(() => {
+            const POIN = { "Juara 1": 100, "Juara 2": 85, "Juara 3": 70, "Harapan 1": 55, "Harapan 2": 40, "Harapan 3": 25, "Honorable Mention": 15 };
+            const map = {};
+            filtered.prestasi.forEach(p => {
+              const uid = p.user_id;
+              const name = p.users?.name || "Unknown";
+              if (!map[uid]) map[uid] = { name, poin: 0 };
+              map[uid].poin += (POIN[p.status] || 0);
+            });
+            const lb = Object.values(map).sort((a, b) => b.poin - a.poin).slice(0, 10);
+            const rankAccent = ["bg-amber-100 text-amber-700", "bg-zinc-200 text-zinc-700", "bg-orange-100 text-orange-700"];
+            return (
+              <div className="bg-white rounded-xl border border-zinc-200 p-6">
+                <p className="text-sm font-black text-zinc-900 mb-4">Leaderboard Prestasi</p>
+                {lb.length === 0 ? (
+                  <p className="text-xs text-zinc-400 text-center py-4">Belum ada data prestasi</p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {lb.map((entry, i) => (
+                      <div key={entry.name} className="flex items-center gap-3">
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 ${i < 3 ? rankAccent[i] : "bg-zinc-100 text-zinc-500"}`}>
+                          {i + 1}
+                        </span>
+                        <p className="flex-1 text-xs font-bold text-zinc-900 truncate">{entry.name}</p>
+                        <p className="text-xs font-black text-royal-600 flex-shrink-0">{entry.poin} poin</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+          {/* Distribusi per Cabang */}
+          {(() => {
+            const dist = {};
+            filtered.prestasi.forEach(p => {
+              const c = p.cabang || "Lainnya";
+              dist[c] = (dist[c] || 0) + 1;
+            });
+            const arr = Object.entries(dist).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const maxC = arr[0]?.[1] || 1;
+            return (
+              <div className="bg-white rounded-xl border border-zinc-200 p-6">
+                <p className="text-sm font-black text-zinc-900 mb-4">Distribusi per Cabang</p>
+                {arr.length === 0 ? (
+                  <p className="text-xs text-zinc-400 text-center py-4">Belum ada data prestasi</p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {arr.map(([cab, count]) => (
+                      <div key={cab} className="flex items-center gap-2">
+                        <p className="text-[10px] text-zinc-600 w-28 flex-shrink-0 truncate">{cab}</p>
+                        <div className="flex-1 bg-zinc-100 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="h-2 rounded-full bg-gradient-to-r from-royal-500 to-royal-400"
+                            style={{ width: `${(count / maxC) * 100}%` }}
+                          />
+                        </div>
+                        <p className="text-[10px] font-bold text-zinc-700 w-5 text-right flex-shrink-0">{count}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+        {/* Monthly Trend Chart */}
+        {(() => {
+          const MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+          const counts = Array(12).fill(0);
+          data.prestasi.forEach(p => {
+            const d = p.tanggal_prestasi || p.created_at;
+            if (!d) return;
+            const m = new Date(d).getMonth();
+            counts[m]++;
+          });
+          const maxC = Math.max(...counts, 1);
+          const W = 500, H = 110, pL = 28, pR = 10, pT = 10, pB = 30;
+          const cW = W - pL - pR, cH = H - pT - pB;
+          const pts = counts.map((v, i) => ({
+            x: pL + (i / 11) * cW,
+            y: pT + cH - (v / maxC) * cH,
+            v,
+            m: MONTHS[i],
+          }));
+          const polyline = pts.map(p => `${p.x},${p.y}`).join(" ");
+          return (
+            <div className="bg-white rounded-xl border border-zinc-200 p-6">
+              <p className="text-sm font-black text-zinc-900 mb-4">Tren Prestasi per Bulan</p>
+              <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 110 }}>
+                <defs>
+                  <linearGradient id="trendGradCDA" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4A1FB5" />
+                    <stop offset="100%" stopColor="#4A1FB5" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <polygon
+                  points={`${pL},${pT + cH} ${polyline} ${pL + cW},${pT + cH}`}
+                  fill="url(#trendGradCDA)"
+                  opacity="0.18"
+                />
+                <polyline
+                  points={polyline}
+                  fill="none"
+                  stroke="#4A1FB5"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+                {pts.map((p) => (
+                  <g key={p.m}>
+                    <circle cx={p.x} cy={p.y} r="3" fill="#4A1FB5" />
+                    <text x={p.x} y={H - 4} textAnchor="middle" fontSize="8" fill="#a1a1aa">{p.m}</text>
+                    {p.v > 0 && (
+                      <text x={p.x} y={p.y - 6} textAnchor="middle" fontSize="8" fill="#4A1FB5" fontWeight="bold">{p.v}</text>
+                    )}
+                  </g>
+                ))}
+              </svg>
+            </div>
+          );
+        })()}
+      </div>
+
       {selectedItem && (
         <ItemDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} />
       )}

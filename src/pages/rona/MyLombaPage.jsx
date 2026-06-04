@@ -33,6 +33,7 @@ export default function MyLombaPage() {
 
   const [title, setTitle] = useState("");
   const [cabang, setCabang] = useState("");
+  const [tanggalLomba, setTanggalLomba] = useState("");
   const [status, setStatus] = useState(lombaStatuses[0]);
   const [deadline, setDeadline] = useState("");
   const [cluster, setCluster] = useState("");
@@ -62,6 +63,7 @@ export default function MyLombaPage() {
         user_id: user.id,
         title: title.trim(),
         cabang: cabang.trim(),
+        tanggal_lomba: tanggalLomba || null,
         status,
         deadline: deadline || null,
         cluster: cluster || profile?.cluster || null,
@@ -70,6 +72,7 @@ export default function MyLombaPage() {
       if (error) throw error;
       setTitle("");
       setCabang("");
+      setTanggalLomba("");
       setStatus(lombaStatuses[0]);
       setDeadline("");
       setShowAdd(false);
@@ -101,7 +104,7 @@ export default function MyLombaPage() {
             <Trophy size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-zinc-900">My Lomba</h1>
+            <h1 className="text-lg font-bold text-zinc-900">Lomba Saya</h1>
             <p className="text-[11px] text-zinc-400">Tracking status lomba kamu</p>
           </div>
         </div>
@@ -134,6 +137,15 @@ export default function MyLombaPage() {
               placeholder="Cabang"
               className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs placeholder:text-zinc-300 focus:outline-none focus:border-royal-300 focus:ring-4 focus:ring-royal-100/50 transition-all"
             />
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-400 mb-1">Tanggal Lomba</label>
+              <input
+                type="date"
+                value={tanggalLomba}
+                onChange={(e) => setTanggalLomba(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-500 focus:outline-none focus:border-royal-300 focus:ring-4 focus:ring-royal-100/50 transition-all"
+              />
+            </div>
             <div className="relative">
               <select
                 value={cluster}
@@ -211,6 +223,9 @@ export default function MyLombaPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-zinc-900 text-sm truncate">{item.title}</p>
                   <p className="text-xs text-zinc-400 mt-0.5">{item.cabang || "—"}</p>
+                  {item.tanggal_lomba && (
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Tanggal: {formatDate(item.tanggal_lomba)}</p>
+                  )}
                   {item.deadline && (
                     <p className="text-[11px] text-zinc-300 mt-1">Deadline: {formatDate(item.deadline)}</p>
                   )}
@@ -241,7 +256,7 @@ export default function MyLombaPage() {
 
       <div className="mt-4 p-4 rounded-2xl bg-royal-50 border border-royal-100">
         <p className="text-[11px] text-royal-700">
-          Status lomba kamu (Peserta → Semifinalis → Finalis) dicatat di My Lomba. Kalau sudah dapat hasil, upload sebagai <strong>Prestasi</strong> di halaman Upload dengan status yang sesuai.
+          Status lomba kamu (Peserta → Semifinalis → Finalis) dicatat di Lomba Saya. Kalau sudah dapat hasil, upload sebagai <strong>Prestasi</strong> di halaman Upload dengan status yang sesuai.
         </p>
       </div>
     </div>

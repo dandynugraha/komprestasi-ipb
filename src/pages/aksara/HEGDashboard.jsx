@@ -370,16 +370,49 @@ export default function HEGDashboard() {
       )}
 
       {activeTab === "scores" && (
-        events.length === 0 ? (
-          <div className="relative flex flex-col items-center justify-center py-16 bg-white rounded-xl border border-zinc-100 overflow-hidden">
-            <Star size={24} className="text-zinc-200 mb-2" />
-            <p className="text-sm font-black text-zinc-300">Belum ada event</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {events.map(ev => <EventCard key={ev.id} event={ev} mode="scores" />)}
-          </div>
-        )
+        <>
+          {(() => {
+            const map = {};
+            registrations.forEach(r => {
+              if (!r.attended || !r.score || r.score <= 0) return;
+              const uid = r.user_id;
+              if (!map[uid]) map[uid] = { name: r.user_name, total: 0 };
+              map[uid].total += r.score;
+            });
+            const lb = Object.values(map).sort((a, b) => b.total - a.total).slice(0, 10);
+            const rankAccent = ["bg-amber-100 text-amber-700", "bg-zinc-200 text-zinc-700", "bg-orange-100 text-orange-700"];
+            return (
+              <div className="bg-white rounded-xl border border-zinc-200 p-6 mb-4">
+                <p className="text-sm font-black text-zinc-900 mb-4">Leaderboard Keaktifan</p>
+                {lb.length === 0 ? (
+                  <p className="text-xs text-zinc-400 text-center py-4">Belum ada data keaktifan</p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {lb.map((entry, i) => (
+                      <div key={entry.name} className="flex items-center gap-3">
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 ${i < 3 ? rankAccent[i] : "bg-zinc-100 text-zinc-500"}`}>
+                          {i + 1}
+                        </span>
+                        <p className="flex-1 text-xs font-bold text-zinc-900 truncate">{entry.name}</p>
+                        <p className="text-xs font-black text-royal-600 flex-shrink-0">{entry.total} skor</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+          {events.length === 0 ? (
+            <div className="relative flex flex-col items-center justify-center py-16 bg-white rounded-xl border border-zinc-100 overflow-hidden">
+              <Star size={24} className="text-zinc-200 mb-2" />
+              <p className="text-sm font-black text-zinc-300">Belum ada event</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {events.map(ev => <EventCard key={ev.id} event={ev} mode="scores" />)}
+            </div>
+          )}
+        </>
       )}
 
       {activeTab === "registrations" && (

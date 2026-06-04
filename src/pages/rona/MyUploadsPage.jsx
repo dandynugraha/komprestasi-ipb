@@ -74,7 +74,7 @@ export default function MyUploadsPage() {
           <Upload size={18} className="text-white" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-zinc-900">My Uploads</h1>
+          <h1 className="text-lg font-bold text-zinc-900">Upload Saya</h1>
           <p className="text-[11px] text-zinc-400">Semua prestasi, kegiatan, dan project kamu</p>
         </div>
       </div>
