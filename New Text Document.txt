@@ -1,146 +1,56 @@
-Project React+Vite web organisasi "Komprestasi IPB". Backend Supabase. Client: src/lib/supabase.js. Auth: src/context/AuthContext.jsx (provides: user, profile — fields: id, name, email, role, cluster, lokasi).
+JANGAN ubah yang sudah benar. Fix hanya masalah supervisor.
 
-JANGAN ubah yang sudah berfungsi benar.
+Masalah: Login dengan akun supervisor (role = "supervisor") tapi tampilanya dashboard biasa seperti Rona. Harus redirect ke /dashboard/supervisor dan hanya tampilkan menu analytics.
 
-Ada role baru: "supervisor" di tabel users. Ketika user dengan role "supervisor" login, mereka harus melihat dashboard khusus yang berisi SEMUA analytics dan charts. Read-only, tidak bisa edit apapun.
+Cek dan fix semua file berikut:
 
-## TASK 1: Buat SupervisorDashboard.jsx
-File baru: src/pages/supervisor/SupervisorDashboard.jsx
-
-Halaman ini adalah dashboard analytics lengkap untuk supervisor. Berisi SEMUA data dari seluruh divisi dalam satu halaman scroll. Desain harus premium dan informatif.
-
-### Section A: Header
-- Greeting: "Dashboard Supervisor" dengan icon BarChart3
-- Subheading: "Overview seluruh aktivitas Komprestasi IPB"
-- Style: hero-gradient (purple gradient) rounded-xl p-6, text-white
-
-### Section B: Overall Stats (4 cards horizontal)
-Fetch dari Supabase:
-1. Total Anggota — SELECT count(*) FROM users
-2. Total Prestasi — SELECT count(*) FROM prestasi
-3. Total Event — SELECT count(*) FROM events WHERE visibility IN ('internal', 'eksternal')
-4. Total Lomba Aktif — SELECT count(*) FROM lomba
-
-Style: bg-white rounded-xl border border-zinc-200 p-5 text-center, icon gradient di atas, angka font-black text-3xl
-
-### Section C: Leaderboard Prestasi + Leaderboard Keaktifan (2 kolom)
-
-KIRI — Leaderboard Prestasi:
-- Heading: "Leaderboard Prestasi"
-- Fetch semua prestasi, hitung poin per user:
-  Juara 1=100, Juara 2=85, Juara 3=70, Harapan 1=55, Harapan 2=40, Harapan 3=25, Honorable Mention=15
-- Fetch users name by user_id
-- Sort by total poin DESC, tampilkan TOP 10
-- Tampilan: table/list — Rank, Nama, Poin
-- Rank 1: bg-amber-50 border-amber-200 (gold)
-- Rank 2: bg-zinc-50 border-zinc-200 (silver)
-- Rank 3: bg-orange-50 border-orange-200 (bronze)
-- Rank 4+: bg-white
-
-KANAN — Leaderboard Keaktifan:
-- Heading: "Leaderboard Keaktifan"
-- Fetch: event_registrations WHERE attended = true AND score > 0
-- Group by user_id, SUM(score)
-- Fetch users name
-- Sort DESC, TOP 10
-- Tampilan sama seperti Leaderboard Prestasi
-
-Style per leaderboard: bg-white rounded-xl border border-zinc-200 p-6
-Layout: grid grid-cols-1 lg:grid-cols-2 gap-6
-
-### Section D: Monthly Achievement Trends (full width)
-- Heading: "Tren Prestasi Bulanan"
-- Fetch semua prestasi, group by bulan dari tanggal_prestasi (kalau null fallback ke created_at)
-- Hitung jumlah prestasi per bulan untuk 12 bulan terakhir
-- Cek apakah recharts sudah di package.json. Kalau ada, pakai:
-  import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-  Buat line chart: X=bulan, Y=jumlah, stroke="#6231D4"
-- Kalau recharts tidak ada, buat SVG chart manual (polyline)
-- Container: bg-white rounded-xl border border-zinc-200 p-6
-
-### Section E: Distribusi Prestasi per Cabang (kiri) + Distribusi per Cluster (kanan)
-
-KIRI — Per Cabang:
-- Heading: "Distribusi Prestasi per Cabang"
-- Fetch prestasi, group by cabang, count
-- Tampilkan horizontal bar chart (bisa pakai recharts BarChart atau div bars manual)
-- Gradient bars: from-royal-400 to-royal-600
-
-KANAN — Per Cluster:
-- Heading: "Distribusi per Cluster"
-- 3 cards: Penulisan (count), Bisnis (count), Desain (count)
-- Fetch prestasi, group by cluster, count
-- Donut chart kalau bisa (recharts PieChart) atau 3 stat cards
-- Warna: Penulisan=royal, Bisnis=amber, Desain=blue
-
-Layout: grid grid-cols-1 lg:grid-cols-2 gap-6
-
-### Section F: Event Overview (full width)
-- Heading: "Event Terbaru"
-- Fetch: SELECT * FROM events ORDER BY date DESC LIMIT 10
-- Tampilkan table: Title, Date, Visibility (badge), Pendaftar count
-- Fetch pendaftar count per event: SELECT event_id, count(*) FROM event_registrations GROUP BY event_id
-- Style: bg-white rounded-xl border border-zinc-200 overflow-hidden
-- Table header: bg-zinc-50
-- Rows: hover:bg-zinc-50
-
-### Section G: Aktivitas Terbaru (full width)
-- Heading: "Aktivitas Terbaru"
-- Fetch 15 terbaru dari: prestasi, kegiatan, projects, lomba, events, pesen_desain
-- Gabung semua, sort by created_at DESC
-- Tampilkan feed: icon per type, title, user name, tanggal, type badge
-- Type badges: Prestasi=amber, Kegiatan=emerald, Project=blue, Lomba=royal, Event=pink, Desain=violet
-
-## TASK 2: Tambah route di App.jsx
-File: src/App.jsx
-
-- Import SupervisorDashboard: import SupervisorDashboard from "./pages/supervisor/SupervisorDashboard"
-- Buat folder src/pages/supervisor/ kalau belum ada
-- Tambah route di dalam dashboard routes:
-  <Route path="supervisor" element={<SupervisorDashboard />} />
-
-## TASK 3: Update DashboardLayout untuk role supervisor
-File: src/components/layout/DashboardLayout.jsx
-
-### A) Sidebar navigation untuk supervisor
-Di function getNavItems, tambah kondisi untuk role "supervisor":
+## 1. src/components/layout/DashboardLayout.jsx
+Cari function getNavItems. Pastikan kondisi supervisor dicek PERTAMA sebelum kondisi lain:
 
 ```javascript
+// CEK SUPERVISOR PALING AWAL, sebelum cek rona/aksara
 if (profile?.role === "supervisor") {
   items.push({ section: "Supervisor" });
   items.push({ icon: "barChart3", label: "Dashboard Analytics", path: "/dashboard/supervisor" });
+  items.push({ section: "Lainnya" });
+  items.push({ icon: "help", label: "FAQ", path: "/dashboard/faq" });
+  return items; // RETURN LANGSUNG, jangan lanjut ke menu rona/aksara
 }
 ```
 
-Tambah icon barChart3 di iconMap:
-barChart3: BarChart3
-Dan import BarChart3 dari lucide-react.
+Pastikan "return items" ada setelah supervisor menu — supaya TIDAK menambahkan menu Rona (Lomba Saya, Jadwal Saya, dll).
 
-### B) Supervisor HANYA lihat dashboard analytics
-Supervisor TIDAK perlu menu: Lomba Saya, Jadwal Saya, Pengeluaran Saya, Event Saya, Upload, Pesen Desain, Report Bug.
+Juga pastikan BarChart3 ada di import lucide-react DAN di iconMap:
+- Import: tambah BarChart3 di baris import dari "lucide-react"
+- iconMap: tambah barChart3: BarChart3
 
-Jadi untuk supervisor, getNavItems HANYA return:
-- Section "Supervisor" → Dashboard Analytics
-- Section "Lainnya" → FAQ, Settings (kalau ada)
+## 2. src/pages/rona/DashboardHome.jsx
+Tambah redirect di awal component:
 
-JANGAN tampilkan "Fitur Saya" atau "Upload" atau "Aksara Area" untuk supervisor.
+```javascript
+import { useNavigate } from "react-router-dom";
+// di dalam component:
+const navigate = useNavigate();
+const { profile } = useAuth();
 
-### C) Redirect supervisor ke dashboard analytics setelah login
-Di DashboardHome atau di routing logic: kalau profile.role === "supervisor", redirect ke /dashboard/supervisor
+useEffect(() => {
+  if (profile?.role === "supervisor") {
+    navigate("/dashboard/supervisor", { replace: true });
+  }
+}, [profile, navigate]);
+```
 
-## TASK 4: Update AuthContext untuk supervisor
-File: src/context/AuthContext.jsx
+Ini supaya kalau supervisor masuk ke /dashboard, langsung di-redirect ke /dashboard/supervisor.
 
-Tambah di value object:
-isSupervisor: rawRole === "supervisor",
+## 3. src/App.jsx
+Pastikan route supervisor ADA di dalam dashboard routes:
+- Cek apakah ada: <Route path="supervisor" element={<SupervisorDashboard />} />
+- Cek apakah import SupervisorDashboard ada dan path-nya benar
+- Kalau file SupervisorDashboard.jsx ada di src/pages/supervisor/, import harus:
+  import SupervisorDashboard from "./pages/supervisor/SupervisorDashboard"
 
-## RULES
-- Import supabase: import { supabase } from "@/lib/supabase"
-- Import auth: import { useAuth } from "@/context/AuthContext"
-- Fetch data: useEffect dependency []
-- Format tanggal: new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-- Format angka: new Intl.NumberFormat('id-ID').format(number)
-- Style: Tailwind, rounded-xl, font-black heading, tanpa emoji
-- JANGAN ubah yang sudah benar/berfungsi
-- JANGAN ubah: src/lib/supabase.js
-- Test: npm run build HARUS sukses
+## 4. src/context/AuthContext.jsx
+Pastikan ada: isSupervisor: rawRole === "supervisor"
+Cari baris const rawRole dan pastikan "supervisor" dihandle.
+
+JANGAN ubah file lain. Test: npm run build HARUS sukses.
