@@ -106,7 +106,7 @@ const misiList = [
 const supervisors = [
   { name: "Restu Arie", role: "Supervisor", photo: "supervisor-mas ari.png" },
   { name: "Rafly Dwiki", role: "Supervisor", photo: "supervisor-mas api.png" },
-  { name: "Salma Prameswari", role: "Supervisor", photo: "supervisor kak salma.png" },
+  { name: "Salma Prameswari", role: "Supervisor", photo: "supervisor-kak salma.png" },
 ];
 
 const bph = [
