@@ -25,6 +25,9 @@ import MyUploadsPage from "@/pages/rona/MyUploadsPage";
 import PesenDesainPage from "@/pages/rona/PesenDesainPage";
 import ReportBugPage from "@/pages/rona/ReportBugPage";
 
+// Dashboard — Supervisor pages
+import SupervisorDashboard from "@/pages/supervisor/SupervisorDashboard";
+
 // Dashboard — Aksara pages
 import CDADashboard from "@/pages/aksara/CDADashboard";
 import HEGDashboard from "@/pages/aksara/HEGDashboard";
@@ -90,6 +93,9 @@ export default function App() {
 
             {/* Upload routes */}
             <Route path="upload/:type" element={<UploadPage />} />
+
+            {/* Supervisor route */}
+            <Route path="supervisor" element={<SupervisorDashboard />} />
 
             {/* Aksara area routes */}
             <Route path="cda" element={<CDADashboard />} />

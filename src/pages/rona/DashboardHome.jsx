@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Award, Activity, Folder, Trophy, Calendar, Wallet,
@@ -45,6 +45,14 @@ const quickActions = [
 
 export default function DashboardHome() {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (profile?.role === "supervisor") {
+      navigate("/dashboard/supervisor", { replace: true });
+    }
+  }, [profile, navigate]);
+
   const firstName = profile?.name?.split(" ")[0] || "User";
   const clusterShort = siteConfig.clusterShort?.[profile?.cluster] || profile?.cluster || "";
   const lokasiLabel = profile?.lokasi || "";

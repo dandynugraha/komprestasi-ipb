@@ -69,6 +69,7 @@ export function AuthProvider({ children }) {
     signIn,
     signOut,
     // Role checks based on real data format: "rona", "cda (bisnis)", "heg", "mbd (ilustrator)", etc.
+    isSupervisor: rawRole === "supervisor",
     isRona: rawRole === "rona",
     isAksara: rawRole.startsWith("cda") || rawRole.startsWith("mbd") || rawRole === "heg" || rawRole === "korvoks",
     isBph: rawRole === "bph",

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Trophy, Calendar, Wallet, CalendarDays, Upload,
   Award, Activity, Folder, HelpCircle, Settings, LogOut,
-  Database, Users, Palette, MapPin, Eye, Brush, Menu, X, AlertTriangle,
+  Database, Users, Palette, MapPin, Eye, Brush, Menu, X, AlertTriangle, BarChart3,
 } from "lucide-react";
 import siteConfig from "@/config/site.config";
 import { useAuth } from "@/context/AuthContext";
@@ -15,11 +15,20 @@ const iconMap = {
   activity: Activity, folder: Folder, help: HelpCircle,
   settings: Settings, database: Database, users: Users,
   palette: Palette, mapPin: MapPin, eye: Eye, brush: Brush,
-  alertTriangle: AlertTriangle,
+  alertTriangle: AlertTriangle, barChart3: BarChart3,
 };
 
 function getNavItems(profile) {
   const items = [];
+
+  // Supervisor — cek PALING AWAL, return langsung
+  if (profile?.role === "supervisor") {
+    items.push({ section: "Supervisor" });
+    items.push({ icon: "barChart3", label: "Dashboard Analytics", path: "/dashboard/supervisor" });
+    items.push({ section: "Lainnya" });
+    items.push({ icon: "help", label: "FAQ", path: "/dashboard/faq" });
+    return items;
+  }
 
   // Aksara Area — hanya divisi sendiri
   if (profile?.role === "aksara" || (profile?.role && profile.role.startsWith("cda")) || (profile?.role && profile.role.startsWith("mbd")) || profile?.role === "heg" || profile?.role === "korvoks" || profile?.role === "bph") {
