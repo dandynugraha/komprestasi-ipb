@@ -251,7 +251,7 @@ export default function HomePage() {
           { data: eventCards },
           { count: eventsThisMonthCount },
         ] = await Promise.all([
-          supabase.from("users").select("*", { count: "exact", head: true }),
+          supabase.from("users").select("*", { count: "exact", head: true }).neq("role", "supervisor"),
           supabase.from("prestasi").select("*", { count: "exact", head: true }).in("status", PRESTASI_STATUSES),
           supabase.from("events").select("*", { count: "exact", head: true }),
           supabase.from("projects").select("*", { count: "exact", head: true }),

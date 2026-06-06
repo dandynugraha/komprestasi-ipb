@@ -54,7 +54,7 @@ export default function BPHDashboard() {
       supabase.from("kegiatan").select("*", { count: "exact", head: true }),
       supabase.from("events").select("*", { count: "exact", head: true }),
       supabase.from("pesen_desain").select("*", { count: "exact", head: true }),
-      supabase.from("users").select("*", { count: "exact", head: true }),
+      supabase.from("users").select("*", { count: "exact", head: true }).neq("role", "supervisor"),
     ]);
 
     const merged = [

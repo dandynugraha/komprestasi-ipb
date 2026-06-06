@@ -84,7 +84,7 @@ export default function SupervisorDashboard() {
         applyCluster(supabase.from("prestasi").select("*", { count: "exact", head: true })),
         applyCluster(supabase.from("kegiatan").select("*", { count: "exact", head: true })),
         applyCluster(supabase.from("projects").select("*", { count: "exact", head: true })),
-        applyCluster(supabase.from("users").select("*", { count: "exact", head: true })),
+        applyCluster(supabase.from("users").select("*", { count: "exact", head: true }).neq("role", "supervisor")),
         applyCluster(supabase.from("prestasi").select("user_id, created_at")),
         applyCluster(supabase.from("kegiatan").select("user_id, created_at")),
         applyCluster(supabase.from("projects").select("user_id, created_at")),
